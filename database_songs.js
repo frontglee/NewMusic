@@ -12,7 +12,7 @@ const songsDatabase = [
 
   paths: {
     audio: "./assets/newmusic/songs/tutorial.wav",
-    lyrics: "./assets/newmusic/songs/tutorial.lrc"
+    lyrics: "./assets/newmusic/lyrics/tutorial.lrc"
   }
 },
 ];
