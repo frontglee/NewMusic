@@ -1,0 +1,18 @@
+# Ignore Node Dependencies
+node_modules/
+
+# Ignore Compiled App Builds
+ReleaseBuild/
+
+# Ignore Large Executables (GitHub has strict size limits)
+*.exe
+ffmpeg.exe
+yt-dlp.exe
+
+# Ignore User-Specific Data (Your personal music and profiles)
+assets/
+accounts/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db

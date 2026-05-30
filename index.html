@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NewMusic</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/x-icon" href="logo.ico" />
+  </head>
+  <body>
+    <svg style="display: none">
+      <symbol id="icon-music" viewBox="0 0 24 24">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="15" cy="16" r="3"></circle>
+      </symbol>
+      <symbol id="icon-home" viewBox="0 0 24 24">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </symbol>
+      <symbol id="icon-disc" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="3"></circle>
+      </symbol>
+      <symbol id="icon-chart" viewBox="0 0 24 24">
+        <line x1="12" y1="20" x2="12" y2="10"></line>
+        <line x1="18" y1="20" x2="18" y2="4"></line>
+        <line x1="6" y1="20" x2="6" y2="16"></line>
+      </symbol>
+      <symbol id="icon-heart" viewBox="0 0 24 24">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        ></path>
+      </symbol>
+      <symbol id="icon-list" viewBox="0 0 24 24">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </symbol>
+      <symbol id="icon-gear" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path
+          d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+        ></path>
+      </symbol>
+      <symbol id="icon-shuffle" viewBox="0 0 24 24">
+        <polyline points="16 3 21 3 21 8"></polyline>
+        <line x1="4" y1="20" x2="21" y2="3"></line>
+        <polyline points="21 16 21 21 16 21"></polyline>
+        <line x1="15" y1="15" x2="21" y2="21"></line>
+        <line x1="4" y1="4" x2="9" y2="9"></line>
+      </symbol>
+      <symbol id="icon-prev" viewBox="0 0 24 24">
+        <polygon points="19 20 9 12 19 4 19 20"></polygon>
+        <line x1="5" y1="19" x2="5" y2="5"></line>
+      </symbol>
+      <symbol id="icon-play" viewBox="0 0 24 24">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </symbol>
+      <symbol id="icon-pause" viewBox="0 0 24 24">
+        <rect x="6" y="4" width="4" height="16" fill="currentColor"></rect>
+        <rect x="14" y="4" width="4" height="16" fill="currentColor"></rect>
+      </symbol>
+      <symbol id="icon-repeat-1" viewBox="0 0 24 24">
+        <polyline points="17 1 21 5 17 9"></polyline>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <polyline points="7 23 3 19 7 15"></polyline>
+        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+        <text
+          x="12"
+          y="15"
+          font-size="9"
+          font-family="sans-serif"
+          font-weight="bold"
+          text-anchor="middle"
+          stroke="none"
+          fill="currentColor"
+        >
+          1
+        </text>
+      </symbol>
+      <symbol id="icon-next" viewBox="0 0 24 24">
+        <polygon points="5 4 15 12 5 20 5 4"></polygon>
+        <line x1="19" y1="5" x2="19" y2="19"></line>
+      </symbol>
+      <symbol id="icon-repeat" viewBox="0 0 24 24">
+        <polyline points="17 1 21 5 17 9"></polyline>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <polyline points="7 23 3 19 7 15"></polyline>
+        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+      </symbol>
+      <symbol id="icon-mic" viewBox="0 0 24 24">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        <line x1="12" y1="19" x2="12" y2="22"></line>
+      </symbol>
+      <symbol id="icon-volume" viewBox="0 0 24 24">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      </symbol>
+      <symbol id="icon-mute" viewBox="0 0 24 24">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      </symbol>
+      <symbol
+        id="icon-brand-record"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="11" cy="13" r="9"></circle>
+        <circle cx="11" cy="13" r="3"></circle>
+        <path d="M20 4 L14.5 9.5"></path>
+        <circle cx="21" cy="3" r="1.5"></circle>
+      </symbol>
+      <symbol
+        id="icon-autoplay"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M4 19V10a4 4 0 0 1 4-4h11"></path>
+        <polyline points="15 2 20 6 15 10"></polyline>
+      </symbol>
+    </svg>
+    <div id="app">
+      <nav id="sidebar">
+        <div
+          class="brand"
+          style="display: flex; align-items: center; gap: 10px; font-size: 22px"
+        >
+          <svg
+            class="icon"
+            style="width: 28px; height: 28px; color: var(--text-main)"
+          >
+            <use href="#icon-brand-record"></use>
+          </svg>
+          NewMusic
+        </div>
+
+        <div class="menu-section">
+          <h3>Library</h3>
+          <ul>
+            <li>
+              <a href="#" class="active" id="nav-home"
+                ><svg class="icon"><use href="#icon-home"></use></svg> Home</a
+              >
+            </li>
+            <li>
+              <a href="#" id="nav-artists"
+                ><svg class="icon"><use href="#icon-user"></use></svg>
+                Artists</a
+              >
+            </li>
+            <li>
+              <a href="#" id="nav-albums"
+                ><svg class="icon"><use href="#icon-disc"></use></svg> Albums</a
+              >
+            </li>
+            <li>
+              <a href="#" id="nav-songs"
+                ><svg class="icon"><use href="#icon-music"></use></svg> Songs</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div class="menu-section">
+          <h3>Personal</h3>
+          <ul>
+            <li>
+              <a href="#stats" id="nav-stats"
+                ><svg class="icon"><use href="#icon-chart"></use></svg> My
+                Stats</a
+              >
+            </li>
+            <li>
+              <a href="#" id="nav-favorites"
+                ><svg class="icon"><use href="#icon-heart"></use></svg>
+                Favorites</a
+              >
+            </li>
+            <li>
+              <a href="#" id="nav-playlists"
+                ><svg class="icon"><use href="#icon-list"></use></svg>
+                Playlists</a
+              >
+            </li>
+            <li>
+              <a href="#" id="nav-settings">
+                <svg class="icon"><use href="#icon-gear"></use></svg> Settings
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <a href="admin.html" class="admin-link"
+          ><svg class="icon"><use href="#icon-gear"></use></svg> Admin Tool</a
+        >
+      </nav>
+
+      <main id="main-stage">
+        <header class="top-bar">
+          <input
+            type="text"
+            id="search-bar"
+            placeholder="Search artists, albums, or songs..."
+          />
+          <div style="position: relative">
+            <div
+              class="profile-icon"
+              id="btn-profile"
+              onclick="toggleProfileDropdown()"
+            >
+              <svg class="icon"><use href="#icon-user"></use></svg>
+            </div>
+
+            <div id="profile-dropdown" class="profile-dropdown">
+              <div id="account-list-container">
+                <p style="color: #666; font-size: 12px; padding: 10px">
+                  Loading accounts...
+                </p>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div
+                class="dropdown-item add-account-btn"
+                onclick="openCreateAccountModal()"
+              >
+                <svg class="icon" style="width: 16px; height: 16px">
+                  <use href="#icon-user"></use>
+                </svg>
+                Create Account
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div id="content-area">
+          <h1>Welcome Back.</h1>
+          <p style="color: var(--text-muted); margin-top: 10px">
+            This center stage is where your 3-column album views and grids will
+            appear!
+          </p>
+        </div>
+      </main>
+
+      <footer id="bottom-player">
+        <div class="now-playing">
+          <div class="cover-placeholder"></div>
+          <div class="track-info">
+            <span class="title">Song Title</span>
+            <span class="artist">Artist Name</span>
+          </div>
+          <button class="icon-btn" id="btn-player-favorite">
+            <svg class="icon"><use href="#icon-heart"></use></svg>
+          </button>
+        </div>
+
+        <div class="player-controls">
+          <div class="buttons">
+            <button class="icon-btn">
+              <svg class="icon"><use href="#icon-shuffle"></use></svg>
+            </button>
+            <button class="icon-btn">
+              <svg class="icon"><use href="#icon-prev"></use></svg>
+            </button>
+
+            <button class="play-btn">
+              <svg class="icon icon-filled"><use href="#icon-play"></use></svg>
+            </button>
+
+            <button class="icon-btn">
+              <svg class="icon"><use href="#icon-next"></use></svg>
+            </button>
+            <button class="icon-btn">
+              <svg class="icon"><use href="#icon-repeat"></use></svg>
+            </button>
+          </div>
+          <div class="progress-bar">
+            <span class="time">0:00</span>
+            <input type="range" min="0" max="100" value="0" class="slider" />
+            <span class="time">3:45</span>
+          </div>
+        </div>
+
+        <div class="extra-controls">
+          <button class="icon-btn" id="btn-autoplay">
+            <svg class="icon"><use href="#icon-autoplay"></use></svg>
+          </button>
+
+          <button class="icon-btn">
+            <svg class="icon"><use href="#icon-mic"></use></svg>
+          </button>
+          <button class="icon-btn">
+            <svg class="icon"><use href="#icon-volume"></use></svg>
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="50"
+            class="slider volume-slider"
+          />
+        </div>
+      </footer>
+    </div>
+
+    <div id="create-account-modal" class="modal-overlay" style="display: none">
+      <div class="modal-box">
+        <span class="close-modal-btn" onclick="closeCreateAccountModal()"
+          >&times;</span
+        >
+        <h2 style="margin-top: 0; margin-bottom: 20px">Create Profile</h2>
+
+        <label
+          style="
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          "
+          >Profile Name</label
+        >
+        <input
+          type="text"
+          id="acc-name-input"
+          class="ctrl-input"
+          placeholder="e.g. FlameFrags"
+          style="
+            width: 100%;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+          "
+        />
+
+        <label
+          style="
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          "
+          >Profile Picture</label
+        >
+
+        <div
+          id="drop-zone"
+          class="drop-zone"
+          onclick="document.getElementById('file-input').click()"
+        >
+          <div
+            id="drop-zone-text"
+            style="z-index: 2; position: relative; pointer-events: none"
+          >
+            Drag & Drop or Click to browse<br />
+            <span style="font-size: 12px; color: #666"
+              >Will be cropped & converted to PNG (1200x1200)</span
+            >
+          </div>
+          <img
+            id="drop-zone-preview"
+            src=""
+            style="display: none; opacity: 0.4; z-index: 1"
+          />
+        </div>
+
+        <input
+          type="file"
+          id="file-input"
+          accept="image/*"
+          style="display: none"
+        />
+
+        <button
+          class="btn-primary"
+          style="width: 100%; justify-content: center; margin-top: 24px"
+          onclick="submitNewAccount()"
+        >
+          Create Account
+        </button>
+      </div>
+    </div>
+
+    <div id="create-playlist-modal" class="modal-overlay" style="display: none">
+      <div class="modal-box">
+        <span class="close-modal-btn" onclick="closeCreatePlaylistModal()"
+          >&times;</span
+        >
+        <h2 style="margin-top: 0; margin-bottom: 20px">Create Playlist</h2>
+        <label
+          style="
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          "
+          >Playlist Name</label
+        >
+        <input
+          type="text"
+          id="pl-name-input"
+          class="ctrl-input"
+          placeholder="e.g. My Awesome Mix"
+          style="
+            width: 100%;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+          "
+        />
+        <label
+          style="
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          "
+          >Playlist Cover (Optional)</label
+        >
+        <div
+          id="pl-drop-zone"
+          class="drop-zone"
+          onclick="document.getElementById('pl-file-input').click()"
+        >
+          <div
+            id="pl-drop-zone-text"
+            style="z-index: 2; position: relative; pointer-events: none"
+          >
+            Drag & Drop or Click to browse<br /><span
+              style="font-size: 12px; color: #666"
+              >Will be cropped & converted to PNG (1200x1200)</span
+            >
+          </div>
+          <img
+            id="pl-drop-zone-preview"
+            src=""
+            style="display: none; opacity: 0.4; z-index: 1"
+          />
+        </div>
+        <input
+          type="file"
+          id="pl-file-input"
+          accept="image/*"
+          style="display: none"
+        />
+
+        <input type="hidden" id="pl-pending-song" value="" />
+
+        <button
+          class="btn-primary"
+          style="width: 100%; justify-content: center; margin-top: 24px"
+          onclick="submitNewPlaylist()"
+        >
+          Create Playlist
+        </button>
+      </div>
+    </div>
+
+    <script src="database_artists.js"></script>
+    <script src="database_albums.js"></script>
+    <script src="database_songs.js"></script>
+
+    <script src="script.js"></script>
+  </body>
+</html>

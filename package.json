@@ -1,0 +1,14 @@
+{
+    "name": "newmusic",
+    "productName": "NewMusic",
+    "version": "1.0.0",
+    "author": "Your Name",
+    "main": "main.js",
+    "description": "Local Music Player",
+    "scripts": {
+        "start": "electron ."
+    },
+    "devDependencies": {
+        "electron": "^42.3.0"
+    }
+}

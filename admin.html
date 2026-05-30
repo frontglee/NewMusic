@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin - NewMusic</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* Admin-specific layout tweaks */
+      body {
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        height: 100vh;
+        box-sizing: border-box;
+        overflow: hidden; /* Prevent full body scroll, let panels scroll */
+      }
+
+      .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #282828;
+        padding-bottom: 20px;
+      }
+
+      .admin-container {
+        display: flex;
+        gap: 40px;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .form-panel,
+      .output-panel {
+        flex: 1;
+        background-color: var(--bg-player);
+        padding: 32px;
+        border-radius: 12px;
+        border: 1px solid #282828;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Custom Panel Scrollbars */
+      .form-panel::-webkit-scrollbar,
+      .output-panel::-webkit-scrollbar {
+        width: 8px;
+      }
+      .form-panel::-webkit-scrollbar-thumb,
+      .output-panel::-webkit-scrollbar-thumb {
+        background-color: #444;
+        border-radius: 10px;
+      }
+
+      .output-section {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        margin-bottom: 24px;
+      }
+
+      label {
+        display: block;
+        margin-top: 20px;
+        margin-bottom: 8px;
+        color: var(--text-muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Use standard input styles but make them 100% width */
+      .ctrl-input,
+      .ctrl-select {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      textarea.ctrl-input {
+        flex-grow: 1;
+        min-height: 200px;
+        font-family: "Courier New", Courier, monospace;
+        color: #a5d6ff;
+        resize: vertical;
+        margin-bottom: 15px;
+      }
+
+      /* Tabs System */
+      .tabs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 32px;
+        border-bottom: 1px solid #282828;
+        padding-bottom: 16px;
+      }
+      .tab-btn {
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: 1px solid #444;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.2s;
+        font-size: 13px;
+      }
+      .tab-btn:hover {
+        border-color: var(--text-main);
+        color: var(--text-main);
+      }
+      .tab-btn.active {
+        background: var(--text-main);
+        color: #000;
+        border-color: var(--text-main);
+      }
+
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Dynamic Track Rows */
+      .track-row {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 12px;
+        background: #121212;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #282828;
+      }
+      .track-row-top,
+      .track-row-bottom {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="database_artists.js"></script>
+    <script src="database_albums.js"></script>
+    <script src="database_songs.js"></script>
+
+    <header class="admin-header">
+      <div style="display: flex; align-items: center; gap: 16px">
+        <svg
+          class="icon"
+          style="width: 28px; height: 28px; color: var(--text-main)"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+          ></path>
+        </svg>
+        <h1 style="margin: 0; font-size: 24px">NewMusic Database Admin</h1>
+      </div>
+      <a href="index.html" class="btn-secondary" style="text-decoration: none"
+        >← Back to Player</a
+      >
+    </header>
+
+    <div class="admin-container">
+      <div class="form-panel">
+        <div class="tabs">
+          <button
+            id="btn-tab-artist"
+            class="tab-btn"
+            onclick="switchTab('artist')"
+          >
+            Add Artist
+          </button>
+          <button
+            id="btn-tab-album"
+            class="tab-btn active"
+            onclick="switchTab('album')"
+          >
+            Add Album
+          </button>
+          <button id="btn-tab-auto" class="tab-btn" onclick="switchTab('auto')">
+            Auto Downloader
+          </button>
+
+          <a
+            href="newmusic://"
+            id="btn-run-script"
+            class="btn-primary"
+            style="
+              background: #ff0050;
+              color: white;
+              text-decoration: none;
+              padding: 10px 20px;
+              border-radius: 20px;
+              font-size: 13px;
+              margin-left: auto;
+            "
+          >
+            Run Downloader Script
+          </a>
+        </div>
+
+        <div id="tab-artist" class="tab-content">
+          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
+            New Artist
+          </h2>
+
+          <label>Artist Name</label>
+          <input
+            type="text"
+            id="art-name"
+            class="ctrl-input"
+            placeholder="e.g. Artist Name"
+          />
+
+          <label>Start Year (Active Since)</label>
+          <input
+            type="number"
+            id="art-start"
+            class="ctrl-input"
+            placeholder="e.g. YYYY"
+          />
+
+          <label>First Listen Year</label>
+          <input
+            type="number"
+            id="art-first"
+            class="ctrl-input"
+            placeholder="e.g. YYYY"
+          />
+
+          <label>Country</label>
+          <input
+            type="text"
+            id="art-country"
+            class="ctrl-input"
+            placeholder="e.g. Country Name"
+          />
+
+          <label>Genres (Comma-separated)</label>
+          <input
+            type="text"
+            id="art-genres"
+            class="ctrl-input"
+            placeholder="e.g. Pop, Electronic, Rock"
+          />
+
+          <label>Tags (Comma-separated)</label>
+          <input
+            type="text"
+            id="art-tags"
+            class="ctrl-input"
+            placeholder="e.g. energetic, atmospheric"
+          />
+
+          <label>Members (Comma-separated)</label>
+          <input
+            type="text"
+            id="art-members"
+            class="ctrl-input"
+            placeholder="e.g. Member 1, Member 2"
+          />
+
+          <button
+            onclick="generateArtistCode()"
+            class="btn-primary"
+            style="width: 100%; margin-top: 30px"
+          >
+            Generate Artist Code
+          </button>
+        </div>
+
+        <div id="tab-album" class="tab-content active">
+          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
+            New Album & Tracks
+          </h2>
+
+          <label>Album Title</label>
+          <input
+            type="text"
+            id="alb-title"
+            class="ctrl-input"
+            placeholder="e.g. Album Title"
+          />
+
+          <label>Artist (Autocomplete from DB)</label>
+          <select id="alb-artist" class="ctrl-select"></select>
+
+          <label>Release Date (DD/MM/YYYY, MM/YYYY, or YYYY)</label>
+          <input
+            type="text"
+            id="alb-date"
+            class="ctrl-input"
+            placeholder="e.g. DD/MM/YYYY"
+          />
+
+          <label
+            >First Listen Date (DD/MM/YYYY, MM/YYYY, or YYYY) [Optional]</label
+          >
+          <input
+            type="text"
+            id="alb-firstdate"
+            class="ctrl-input"
+            placeholder="e.g. MM/YYYY"
+          />
+
+          <label>Album Type</label>
+          <select id="alb-type" class="ctrl-select">
+            <option value="album">Album</option>
+            <option value="ep">EP</option>
+            <option value="single">Single</option>
+            <option value="compilation">Compilation</option>
+          </select>
+
+          <label>Album Genres (Comma-separated)</label>
+          <input
+            type="text"
+            id="alb-genres"
+            class="ctrl-input"
+            placeholder="e.g. Pop, Indie"
+          />
+
+          <label>Album Tags (Comma-separated)</label>
+          <input
+            type="text"
+            id="alb-tags"
+            class="ctrl-input"
+            placeholder="e.g. masterpiece, conceptual"
+          />
+
+          <hr style="border-color: #282828; margin: 30px 0" />
+
+          <label>Number of Tracks</label>
+          <div style="display: flex; gap: 12px; align-items: center">
+            <input
+              type="number"
+              id="alb-trackcount"
+              class="ctrl-input"
+              value="1"
+              min="1"
+              style="width: 100px; margin: 0"
+            />
+            <button
+              onclick="buildTrackFields()"
+              class="btn-secondary"
+              style="margin: 0"
+            >
+              Build Track Rows
+            </button>
+          </div>
+
+          <div id="track-fields-container" style="margin-top: 20px"></div>
+
+          <button
+            onclick="generateAlbumCode()"
+            class="btn-primary"
+            style="width: 100%; margin-top: 30px"
+          >
+            Generate Bulk Code
+          </button>
+        </div>
+
+        <div id="tab-auto" class="tab-content">
+          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
+            Search & Download Song
+          </h2>
+
+          <label>Search YouTube</label>
+          <div style="display: flex; gap: 12px; align-items: center">
+            <input
+              type="text"
+              id="auto-search"
+              class="ctrl-input"
+              placeholder="e.g. Song Title Search..."
+              style="margin: 0"
+            />
+            <button
+              onclick="mockSearchYoutube()"
+              class="btn-primary"
+              style="
+                background: #ff0050;
+                color: white;
+                border: none;
+                margin: 0;
+                min-width: 120px;
+              "
+            >
+              Search
+            </button>
+          </div>
+
+          <div
+            id="auto-search-results"
+            style="
+              margin-top: 15px;
+              display: none;
+              background: #121212;
+              padding: 15px;
+              border-radius: 8px;
+              border: 1px solid #282828;
+            "
+          >
+            <p style="margin: 0; color: var(--text-muted); font-size: 13px">
+              [App Backend Will Inject Results Here]
+            </p>
+          </div>
+
+          <hr style="border-color: #282828; margin: 30px 0" />
+
+          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
+            Song Metadata
+          </h2>
+
+          <label>Artist</label>
+          <div style="display: flex; gap: 12px; align-items: center">
+            <select
+              id="auto-artist-select"
+              class="ctrl-select"
+              style="margin: 0"
+            ></select>
+            <button
+              id="btn-toggle-artist"
+              onclick="toggleNewArtist()"
+              class="btn-secondary"
+              style="margin: 0; min-width: 130px"
+            >
+              + New Artist
+            </button>
+          </div>
+          <input
+            type="text"
+            id="auto-new-artist"
+            class="ctrl-input"
+            placeholder="Type new artist name..."
+            style="display: none; margin-top: 12px"
+          />
+
+          <label>Release Date (Auto-filled from YouTube)</label>
+          <div style="display: flex; gap: 12px; align-items: center">
+            <input
+              type="date"
+              id="auto-release-date"
+              class="ctrl-input"
+              disabled
+              style="opacity: 0.5; margin: 0"
+            />
+            <button
+              onclick="toggleManualDate()"
+              class="btn-secondary"
+              style="margin: 0; min-width: 130px"
+            >
+              Manual Input
+            </button>
+          </div>
+
+          <label>First Listen Date (Optional)</label>
+          <input type="date" id="auto-first-listen" class="ctrl-input" />
+
+          <label>Genres (Comma-separated, Optional)</label>
+          <input
+            type="text"
+            id="auto-genres"
+            class="ctrl-input"
+            placeholder="e.g. Synthwave, Electronic"
+          />
+
+          <label>Tags (Comma-separated, Optional)</label>
+          <input
+            type="text"
+            id="auto-tags"
+            class="ctrl-input"
+            placeholder="e.g. energetic, masterpiece"
+          />
+
+          <button
+            onclick="triggerAppDownload()"
+            class="btn-primary"
+            style="width: 100%; margin-top: 30px"
+          >
+            Download & Add to Database
+          </button>
+        </div>
+      </div>
+
+      <div class="output-panel">
+        <div class="output-section" id="section-out-1">
+          <h2
+            id="title-out-1"
+            class="header-title"
+            style="font-size: 18px; margin-bottom: 15px"
+          >
+            Album Code
+          </h2>
+          <textarea
+            id="out-box-1"
+            class="ctrl-input"
+            readonly
+            placeholder="Output will appear here..."
+          ></textarea>
+          <button
+            id="btn-copy-1"
+            class="btn-secondary"
+            onclick="copyToClipboard('out-box-1', 'btn-copy-1')"
+          >
+            Copy Album Code
+          </button>
+        </div>
+
+        <div class="output-section" id="section-out-2">
+          <h2 class="header-title" style="font-size: 18px; margin-bottom: 15px">
+            Songs Code
+          </h2>
+          <textarea
+            id="out-box-2"
+            class="ctrl-input"
+            readonly
+            placeholder="Songs output will appear here..."
+          ></textarea>
+          <button
+            id="btn-copy-2"
+            class="btn-secondary"
+            onclick="copyToClipboard('out-box-2', 'btn-copy-2')"
+          >
+            Copy Songs Code
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==========================================
+      // 1. ELECTRON BACKEND CONNECTION & UI MODALS
+      // ==========================================
+      const { ipcRenderer } = require("electron");
+
+      // Inject custom NewMusic Alert Modal
+      window.showCustomAlert = function (msg) {
+        const existing = document.getElementById("custom-app-modal");
+        if (existing) existing.remove();
+
+        const overlay = document.createElement("div");
+        overlay.id = "custom-app-modal";
+        overlay.style.cssText =
+          "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:999999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);";
+
+        overlay.innerHTML = `
+              <div class="modal-box" style="width:360px; padding: 28px; background: #181818; border: 1px solid #282828; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); text-align: center;">
+                  <p style="color: var(--text-main); margin: 0 0 24px 0; font-size: 15px; font-weight: 500; line-height: 1.5;">${msg}</p>
+                  <button class="btn-primary" style="justify-content: center; width: 100%; padding: 12px;" onclick="document.getElementById('custom-app-modal').remove()">OK</button>
+              </div>
+          `;
+        document.body.appendChild(overlay);
+      };
+
+      // Override native alert globally for the Admin tool
+      window.alert = window.showCustomAlert;
+
+      ipcRenderer.on("backend-reply", (event, message) => {
+        document.getElementById("out-box-1").value = message;
+        alert(message); // This will now use the sleek custom modal!
+      });
+
+      // ==========================================
+      // 2. INITIALIZATION & TAB SWITCHING
+      // ==========================================
+      window.onload = () => {
+        // Enforce the Auto Downloader Toggle logic
+        const isAutoDLMode = localStorage.getItem("isAutoDLMode") === "true";
+
+        if (isAutoDLMode) {
+          // Auto Mode ON: Hide the manual script button and manual tabs
+          const scriptBtn = document.querySelector('a[href="newmusic://"]');
+          if (scriptBtn) scriptBtn.style.display = "none";
+
+          document.getElementById("btn-tab-artist").style.display = "none";
+          document.getElementById("btn-tab-album").style.display = "none";
+
+          // Make the Auto tab the active one since manual tabs are hidden
+          switchTab("auto");
+        } else {
+          // Manual Mode OFF (Default): Hide the Auto Downloader tab
+          document.getElementById("btn-tab-auto").style.display = "none";
+        }
+
+        const artistSelect = document.getElementById("alb-artist");
+        if (typeof artistsDatabase !== "undefined") {
+          artistsDatabase.forEach((art) => {
+            const option = document.createElement("option");
+            option.value = art.artistID;
+            option.textContent = art.artist;
+            artistSelect.appendChild(option);
+          });
+        } else {
+          artistSelect.innerHTML =
+            "<option value='art_unknown'>No database loaded</option>";
+        }
+        buildTrackFields();
+
+        // Populate the Auto Downloader artist select too
+        const autoSelect = document.getElementById("auto-artist-select");
+        if (typeof artistsDatabase !== "undefined") {
+          artistsDatabase.forEach((art) => {
+            const option = document.createElement("option");
+            option.value = art.artistID;
+            option.textContent = art.artist;
+            autoSelect.appendChild(option);
+          });
+        }
+      };
+
+      function switchTab(tab) {
+        ["artist", "album", "auto"].forEach((t) => {
+          document.getElementById("tab-" + t).classList.remove("active");
+          document.getElementById("btn-tab-" + t).classList.remove("active");
+        });
+
+        document.getElementById("tab-" + tab).classList.add("active");
+        document.getElementById("btn-tab-" + tab).classList.add("active");
+
+        if (tab === "artist") {
+          document.getElementById("section-out-2").style.display = "none";
+          document.getElementById("title-out-1").innerText = "Artist Code";
+          document.getElementById("btn-copy-1").innerText = "Copy Artist Code";
+        } else if (tab === "album") {
+          document.getElementById("section-out-2").style.display = "flex";
+          document.getElementById("title-out-1").innerText = "Album Code";
+          document.getElementById("btn-copy-1").innerText = "Copy Album Code";
+        } else if (tab === "auto") {
+          document.getElementById("section-out-2").style.display = "none";
+          document.getElementById("title-out-1").innerText = "App Console";
+          document.getElementById("btn-copy-1").innerText = "Copy Logs";
+        }
+      }
+
+      // ==========================================
+      // 3. AUTO DOWNLOADER & YOUTUBE SEARCH
+      // ==========================================
+      let isNewArtist = false;
+      function toggleNewArtist() {
+        isNewArtist = !isNewArtist;
+        const select = document.getElementById("auto-artist-select");
+        const input = document.getElementById("auto-new-artist");
+        const btn = document.getElementById("btn-toggle-artist");
+
+        if (isNewArtist) {
+          select.style.display = "none";
+          input.style.display = "block";
+          btn.innerText = "Cancel";
+          btn.style.color = "#ff0050";
+          btn.style.borderColor = "#ff0050";
+        } else {
+          select.style.display = "block";
+          input.style.display = "none";
+          btn.innerText = "+ New Artist";
+          btn.style.color = "var(--text-main)";
+          btn.style.borderColor = "#555";
+        }
+      }
+
+      let isManualDate = false;
+      function toggleManualDate() {
+        isManualDate = !isManualDate;
+        const dateInput = document.getElementById("auto-release-date");
+        if (isManualDate) {
+          dateInput.disabled = false;
+          dateInput.style.opacity = "1";
+        } else {
+          dateInput.disabled = true;
+          dateInput.style.opacity = "0.5";
+        }
+      }
+
+      let selectedVideoUrl = "";
+      let selectedVideoTitle = "";
+      let selectedVideoDate = "";
+      let selectedVideoDuration = 0;
+
+      function mockSearchYoutube() {
+        const query = document.getElementById("auto-search").value.trim();
+        if (!query) return alert("Enter a search term first!");
+
+        const resultsDiv = document.getElementById("auto-search-results");
+        resultsDiv.style.display = "block";
+        resultsDiv.innerHTML = `<p style="color: var(--text-muted);">Searching YouTube for "${query}"...</p>`;
+
+        ipcRenderer.send("search-youtube", query);
+      }
+
+      let selectedVideoThumbnail = "";
+
+      ipcRenderer.on("search-results", (event, response) => {
+        const resultsDiv = document.getElementById("auto-search-results");
+        if (response.error) {
+          resultsDiv.innerHTML = `<p style="color: #ff0050;">${response.error}</p>`;
+          return;
+        }
+
+        let html = `<h3 style="margin-top:0; font-size: 14px;">Top 5 Results:</h3>`;
+        response.results.forEach((video) => {
+          let fDate = video.upload_date
+            ? `${video.upload_date.substring(0, 4)}-${video.upload_date.substring(4, 6)}-${video.upload_date.substring(6, 8)}`
+            : "";
+          let thumb = video.thumbnail || "";
+          html += `
+            <div style="background: #111; padding: 10px; margin-bottom: 8px; border-radius: 4px; border: 1px solid #333; cursor: pointer;" 
+                 onclick="selectSearchResult('${video.url}', '${video.title.replace(/'/g, "\\'")}', '${fDate}', '${video.duration}', '${thumb}')">
+                <div style="font-weight: bold; color: var(--text-main); font-size: 14px; margin-bottom: 4px;">${video.title}</div>
+                <div style="font-size: 12px; color: var(--text-muted);">${video.channel} • ${video.duration}</div>
+            </div>`;
+        });
+        resultsDiv.innerHTML = html;
+      });
+
+      function selectSearchResult(url, title, date, durationStr, thumbnail) {
+        selectedVideoUrl = url;
+        selectedVideoTitle = title;
+        selectedVideoDate = date;
+        selectedVideoDuration = parseDuration(durationStr);
+        selectedVideoThumbnail = thumbnail;
+
+        document.getElementById("auto-search").value = url;
+        document.getElementById("auto-release-date").value = date;
+        document.getElementById("auto-search-results").innerHTML =
+          `<p style="color: #4caf50; font-weight: bold;">Selected: ${title}</p>`;
+      }
+
+      function triggerAppDownload() {
+        const searchInput = document.getElementById("auto-search").value.trim();
+        const artistID = document.getElementById("auto-artist-select").value;
+        const newArtistName = document
+          .getElementById("auto-new-artist")
+          .value.trim();
+        const releaseDate = document.getElementById("auto-release-date").value;
+        const firstListen = document.getElementById("auto-first-listen").value;
+
+        if (!searchInput)
+          return alert("Please search and select a YouTube video first.");
+        if (isNewArtist && !newArtistName)
+          return alert("Please enter a name for the new artist.");
+
+        const genresRaw = document
+          .getElementById("auto-genres")
+          .value.toLowerCase();
+        const tagsRaw = document
+          .getElementById("auto-tags")
+          .value.toLowerCase();
+        const genresArray = genresRaw
+          ? genresRaw
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s !== "")
+          : [];
+        const tagsArray = tagsRaw
+          ? tagsRaw
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s !== "")
+          : [];
+
+        const appPayload = {
+          action: "download_and_add_song",
+          youtubeQuery: searchInput,
+          artist: isNewArtist
+            ? { isNew: true, name: newArtistName }
+            : { isNew: false, id: artistID },
+          metadata: {
+            title: selectedVideoTitle,
+            releaseDate: releaseDate,
+            firstListenDate: firstListen,
+            duration: selectedVideoDuration,
+            genres: genresArray,
+            tags: tagsArray,
+          },
+        };
+
+        ipcRenderer.send("send-download-order", appPayload);
+        document.getElementById("out-box-1").value =
+          "Payload sent to backend! Executing yt-dlp...";
+      }
+
+      // ==========================================
+      // 4. MANUAL GENERATOR HELPERS
+      // ==========================================
+      function makeSlug(text) {
+        return text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/(^_|_$)/g, "");
+      }
+      function parseDate(rawDate) {
+        if (!rawDate) return "";
+        let cleaned = rawDate.trim();
+        if (cleaned.includes("/")) {
+          const parts = cleaned.split("/");
+          if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+          if (parts.length === 2) return `${parts[1]}-${parts[0]}`;
+        }
+        return cleaned;
+      }
+      function parseDuration(rawDur) {
+        if (!rawDur) return 0;
+        if (rawDur.includes(":")) {
+          const parts = rawDur.split(":");
+          return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        }
+        return parseInt(rawDur) || 0;
+      }
+      function parseArray(rawString) {
+        if (!rawString || !rawString.trim()) return `[]`;
+        const arr = rawString
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s !== "");
+        return `["${arr.join('", "')}"]`;
+      }
+
+      function generateArtistCode() {
+        const name = document.getElementById("art-name").value.trim();
+        if (!name) return alert("Artist Name is required!");
+        const slug = makeSlug(name);
+        const artID = `art_${slug}`;
+        let out = `{\n  artistID: "${artID}",\n  artist: "${name}",\n`;
+        if (document.getElementById("art-start").value)
+          out += `  startYear: "${document.getElementById("art-start").value}",\n`;
+        if (document.getElementById("art-first").value)
+          out += `  firstlistenYear: "${document.getElementById("art-first").value}",\n`;
+        if (document.getElementById("art-country").value)
+          out += `  country: "${document.getElementById("art-country").value}",\n`;
+        out += `\n  genre: ${parseArray(document.getElementById("art-genres").value.toLowerCase())},\n`;
+        out += `  tags: ${parseArray(document.getElementById("art-tags").value.toLowerCase())},\n`;
+        out += `  members: ${parseArray(document.getElementById("art-members").value)},\n\n`;
+        out += `  paths: {\n    cover: "./assets/${slug}/profile.png"\n  }\n},`;
+        document.getElementById("out-box-1").value = out;
+      }
+
+      function buildTrackFields() {
+        const count =
+          parseInt(document.getElementById("alb-trackcount").value) || 1;
+        const container = document.getElementById("track-fields-container");
+        container.innerHTML = `<h3 style="margin-bottom: 12px; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Tracklist Details</h3>`;
+        for (let i = 1; i <= count; i++) {
+          container.innerHTML += `
+            <div class="track-row">
+              <div class="track-row-top">
+                <span style="color: #666; font-weight: bold; width: 25px;">${i}.</span>
+                <input type="text" id="trk-title-${i}" class="ctrl-input" placeholder="Song Title" style="flex: 1; margin: 0;">
+                <input type="text" id="trk-dur-${i}" class="ctrl-input" placeholder="MM:SS" style="width: 80px; margin: 0;">
+              </div>
+              <div class="track-row-bottom" style="padding-left: 35px;">
+                <input type="text" id="trk-date-${i}" class="ctrl-input" placeholder="Date (Opt. if diff)" style="flex: 1; margin: 0;">
+                <input type="text" id="trk-genre-${i}" class="ctrl-input" placeholder="Song Genre" style="flex: 1; margin: 0;">
+                <input type="text" id="trk-tags-${i}" class="ctrl-input" placeholder="Song Tags" style="flex: 1; margin: 0;">
+              </div>
+            </div>`;
+        }
+      }
+
+      function generateAlbumCode() {
+        const title = document.getElementById("alb-title").value.trim();
+        const artistID = document.getElementById("alb-artist").value;
+        const date = parseDate(document.getElementById("alb-date").value);
+        const firstListen = parseDate(
+          document.getElementById("alb-firstdate").value,
+        );
+        const type = document.getElementById("alb-type").value;
+        if (!title) return alert("Album title is required!");
+
+        const artistSelect = document.getElementById("alb-artist");
+        const artistName =
+          artistSelect.options[artistSelect.selectedIndex].text;
+        const artistSlug = makeSlug(artistName);
+        const albumSlug = makeSlug(title);
+        const albID = `alb_${albumSlug}`;
+
+        let albumOut = `{\n  albumID: "${albID}",\n  title: "${title}",\n  artistID: "${artistID}",\n`;
+        if (date) albumOut += `  releaseDate: "${date}",\n`;
+        if (firstListen) albumOut += `  firstlistenDate: "${firstListen}",\n`;
+        albumOut += `  albumType: "${type}",\n\n`;
+        albumOut += `  genre: ${parseArray(document.getElementById("alb-genres").value.toLowerCase())},\n`;
+        albumOut += `  tags: ${parseArray(document.getElementById("alb-tags").value.toLowerCase())},\n\n`;
+        albumOut += `  paths: {\n    cover: "./assets/${artistSlug}/albums/${albumSlug}.png"\n  }\n},`;
+        document.getElementById("out-box-1").value = albumOut;
+
+        let songsOut = ``;
+        const trackCount =
+          parseInt(document.getElementById("alb-trackcount").value) || 1;
+        for (let i = 1; i <= trackCount; i++) {
+          const tTitle =
+            document.getElementById(`trk-title-${i}`).value.trim() ||
+            `Track ${i}`;
+          const tDur = parseDuration(
+            document.getElementById(`trk-dur-${i}`).value,
+          );
+          const finalSongDate = parseDate(
+            document.getElementById(`trk-date-${i}`).value,
+          );
+          const tGenre = parseArray(
+            document.getElementById(`trk-genre-${i}`).value.toLowerCase(),
+          );
+          const tTags = parseArray(
+            document.getElementById(`trk-tags-${i}`).value.toLowerCase(),
+          );
+          const tSlug = makeSlug(tTitle);
+          const songID = `${artistSlug}_${tSlug}`;
+
+          songsOut += `{\n  songID: "${songID}",\n  title: "${tTitle}",\n  artistID: "${artistID}",\n  albumID: "${albID}",\n  track: ${i},\n`;
+          if (finalSongDate) songsOut += `  releaseDate: "${finalSongDate}",\n`;
+          songsOut += `  duration: ${tDur},\n\n  genre: ${tGenre},\n  tags: ${tTags},\n\n`;
+          songsOut += `  paths: {\n    audio: "./assets/${artistSlug}/songs/${tSlug}.wav",\n    lyrics: "./assets/${artistSlug}/lyrics/${tSlug}.lrc"\n  }\n},\n`;
+        }
+        document.getElementById("out-box-2").value = songsOut;
+      }
+
+      function copyToClipboard(boxId, btnId) {
+        const outputBox = document.getElementById(boxId);
+        if (!outputBox.value) return;
+        const originalText = document.getElementById(btnId).innerText;
+        navigator.clipboard.writeText(outputBox.value).then(() => {
+          const copyBtn = document.getElementById(btnId);
+          copyBtn.innerText = "Copied!";
+          setTimeout(() => {
+            copyBtn.innerText = originalText;
+          }, 2000);
+        });
+      }
+    </script>
+  </body>
+</html>
