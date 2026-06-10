@@ -13,6 +13,8 @@
         gap: 30px;
         height: 100vh;
         box-sizing: border-box;
+        background: var(--stage-gradient), var(--bg-main);
+        color: var(--text-main);
         overflow: hidden; /* Prevent full body scroll, let panels scroll */
       }
 
@@ -20,8 +22,84 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #282828;
+        gap: 18px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 20px;
+      }
+
+      .exp-header-controls {
+        display: none;
+        flex: 1;
+        min-width: 420px;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      body.experimental-admin .exp-header-controls {
+        display: flex;
+      }
+
+      .exp-header-section-picker,
+      .exp-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .exp-header-actions {
+        justify-content: flex-end;
+      }
+
+      .exp-header-lufs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        background: var(--bg-surface);
+      }
+
+      .exp-header-lufs label {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .exp-header-controls .tab-btn,
+      .exp-header-controls .btn-secondary {
+        margin: 0;
+        white-space: nowrap;
+      }
+
+      .btn-danger {
+        background: rgba(255, 0, 80, 0.12);
+        color: #ff4f7f;
+        border: 1px solid rgba(255, 0, 80, 0.55);
+        border-radius: 20px;
+        padding: 10px 18px;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          background-color 0.18s ease,
+          border-color 0.18s ease;
+      }
+
+      .btn-danger:hover {
+        background: rgba(255, 0, 80, 0.22);
+        border-color: #ff4f7f;
+        transform: translateY(-1px);
+      }
+
+      .exp-editor-actions .btn-danger {
+        margin-left: auto;
       }
 
       .admin-container {
@@ -34,13 +112,14 @@
       .form-panel,
       .output-panel {
         flex: 1;
-        background-color: var(--bg-player);
+        background-color: var(--bg-elevated);
         padding: 32px;
         border-radius: 12px;
-        border: 1px solid #282828;
+        border: 1px solid var(--border-color);
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        box-shadow: var(--control-shadow);
       }
 
       /* Custom Panel Scrollbars */
@@ -50,7 +129,7 @@
       }
       .form-panel::-webkit-scrollbar-thumb,
       .output-panel::-webkit-scrollbar-thumb {
-        background-color: #444;
+        background-color: var(--border-strong);
         border-radius: 10px;
       }
 
@@ -82,7 +161,7 @@
         flex-grow: 1;
         min-height: 200px;
         font-family: "Courier New", Courier, monospace;
-        color: #a5d6ff;
+        color: var(--accent-color);
         resize: vertical;
         margin-bottom: 15px;
       }
@@ -92,13 +171,13 @@
         display: flex;
         gap: 12px;
         margin-bottom: 32px;
-        border-bottom: 1px solid #282828;
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 16px;
       }
       .tab-btn {
         padding: 10px 20px;
         border-radius: 20px;
-        border: 1px solid #444;
+        border: 1px solid var(--border-strong);
         background: transparent;
         color: var(--text-muted);
         cursor: pointer;
@@ -107,13 +186,13 @@
         font-size: 13px;
       }
       .tab-btn:hover {
-        border-color: var(--text-main);
-        color: var(--text-main);
+        border-color: var(--accent-color);
+        color: var(--accent-color);
       }
       .tab-btn.active {
-        background: var(--text-main);
-        color: #000;
-        border-color: var(--text-main);
+        background: var(--accent-color);
+        color: var(--accent-contrast);
+        border-color: var(--accent-color);
       }
 
       .tab-content {
@@ -129,10 +208,10 @@
         flex-direction: column;
         gap: 12px;
         margin-top: 12px;
-        background: #121212;
+        background: var(--bg-surface);
         padding: 16px;
         border-radius: 8px;
-        border: 1px solid #282828;
+        border: 1px solid var(--border-color);
       }
       .track-row-top,
       .track-row-bottom {
@@ -140,9 +219,680 @@
         gap: 12px;
         align-items: center;
       }
+
+      body.experimental-admin .output-panel {
+        display: none;
+      }
+
+      body.experimental-admin .tabs,
+      body.experimental-admin .tab-content {
+        display: none;
+      }
+
+      body.experimental-admin .form-panel {
+        flex: 1 1 100%;
+        min-height: 0;
+        overflow: hidden;
+        padding: 22px;
+      }
+
+      body.experimental-admin .admin-container {
+        min-height: 0;
+      }
+
+      .exp-admin-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        height: 100%;
+        min-height: 0;
+      }
+
+      .exp-admin-toolbar,
+      .exp-admin-section-picker,
+      .exp-list-controls,
+      .exp-editor-actions,
+      .exp-type-filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .exp-admin-toolbar {
+        flex: 0 0 auto;
+        justify-content: space-between;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .exp-admin-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      #experimental-workspace {
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .exp-admin-workspace {
+        display: grid;
+        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+        gap: 18px;
+        flex: 1;
+        width: 100%;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .exp-list-panel,
+      .exp-editor-panel {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .exp-list-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .exp-list {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        flex-direction: column;
+        gap: 8px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .exp-list-item {
+        display: grid;
+        grid-template-columns: 22px 42px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        min-height: 54px;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-elevated);
+        cursor: pointer;
+        transition:
+          border-color 0.18s ease,
+          background-color 0.18s ease,
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .exp-list-item:hover,
+      .exp-list-item.active {
+        border-color: var(--accent-color);
+        background: var(--bg-hover);
+      }
+
+      .exp-list-item.exp-dragging,
+      .exp-track-row.exp-dragging {
+        opacity: 0.45;
+        background: var(--bg-selected);
+        border-style: dashed;
+        cursor: grabbing;
+      }
+
+      .exp-list-item.exp-drag-over,
+      .exp-track-row.exp-drag-over {
+        border-top: 3px solid var(--accent-color);
+        box-shadow: 0 -6px 18px var(--accent-soft);
+      }
+
+      .exp-drag-handle {
+        width: 22px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: 17px;
+        cursor: grab;
+        border-radius: 6px;
+        user-select: none;
+      }
+
+      .exp-drag-handle:hover {
+        color: var(--accent-color);
+        background: var(--accent-soft);
+      }
+
+      .exp-thumb {
+        width: 42px;
+        height: 42px;
+        border-radius: 6px;
+        object-fit: cover;
+        background: var(--bg-surface-strong);
+      }
+
+      .exp-item-title {
+        color: var(--text-main);
+        font-size: 14px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .exp-item-meta {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .exp-editor-panel {
+        overflow-y: auto;
+      }
+
+      .exp-editor-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 16px;
+      }
+
+      .exp-editor-grid label {
+        margin-top: 0;
+      }
+
+      .exp-editor-full {
+        grid-column: 1 / -1;
+      }
+
+      .exp-image-block {
+        display: grid;
+        grid-template-columns: 112px 1fr;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+
+      .exp-image-preview {
+        width: 112px;
+        height: 112px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: var(--bg-surface-strong);
+        border: 1px solid var(--border-color);
+      }
+
+      .exp-type-filter {
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-elevated);
+      }
+
+      .exp-type-filter label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 11px;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      .exp-related-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .exp-related-panel,
+      .exp-album-track-panel,
+      .exp-album-youtube-panel {
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-elevated);
+      }
+
+      .exp-related-list,
+      .exp-compact-track-list,
+      .exp-youtube-results-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .exp-related-card {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-surface);
+        cursor: pointer;
+      }
+
+      .exp-related-card:hover {
+        border-color: var(--accent-color);
+        background: var(--bg-hover);
+      }
+
+      .exp-related-thumb {
+        width: 38px;
+        height: 38px;
+        border-radius: 6px;
+        object-fit: cover;
+        background: var(--bg-surface-strong);
+      }
+
+      .exp-album-tools {
+        display: grid;
+        grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1fr);
+        gap: 16px;
+        align-items: start;
+        margin-top: 24px;
+      }
+
+      .exp-song-editor-layout {
+        display: grid;
+        grid-template-columns: minmax(320px, 0.95fr) minmax(340px, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .exp-song-fields-panel,
+      .exp-lyrics-panel {
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-elevated);
+      }
+
+      .exp-lyrics-panel {
+        position: sticky;
+        top: 0;
+      }
+
+      .exp-lyrics-panel textarea.ctrl-input {
+        min-height: 430px;
+        height: calc(100vh - 330px);
+        max-height: 680px;
+        margin-bottom: 0;
+      }
+
+      .exp-track-row {
+        display: grid;
+        grid-template-columns: 22px 34px minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        min-height: 42px;
+        padding: 6px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-surface);
+        cursor: pointer;
+        transition:
+          border-color 0.18s ease,
+          background-color 0.18s ease,
+          opacity 0.18s ease;
+      }
+
+      .exp-track-row:hover {
+        border-color: var(--accent-color);
+        background: var(--bg-hover);
+      }
+
+      .exp-track-row .btn-secondary {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .exp-youtube-result {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: 10px;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-surface);
+        cursor: pointer;
+      }
+
+      .exp-youtube-result:hover {
+        border-color: var(--accent-color);
+      }
+
+      .exp-youtube-result.selected {
+        border-color: var(--accent-color);
+        background: var(--accent-soft);
+      }
+
+      .exp-youtube-thumb {
+        width: 72px;
+        height: 42px;
+        border-radius: 4px;
+        object-fit: cover;
+        background: var(--bg-surface-strong);
+      }
+
+      .exp-import-shell {
+        width: 100%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .exp-import-controls {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.3fr) auto auto;
+        gap: 10px;
+        align-items: end;
+        padding: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-elevated);
+      }
+
+      .exp-external-import-panel {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-elevated);
+      }
+
+      .exp-external-import-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .exp-external-import-help {
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.35;
+        margin-top: 4px;
+      }
+
+      .exp-external-import-actions {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      .exp-external-import-panel textarea {
+        min-height: 120px;
+        max-height: 220px;
+        margin: 0;
+        resize: vertical;
+      }
+
+      .exp-import-controls label,
+      .exp-import-row label,
+      .exp-external-import-panel label {
+        margin-top: 0;
+      }
+
+      .exp-import-list {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .exp-import-row {
+        display: grid;
+        grid-template-columns: 24px 72px minmax(220px, 1fr) minmax(240px, 1.1fr);
+        gap: 8px;
+        align-items: start;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-elevated);
+      }
+
+      .exp-import-row.searching {
+        border-color: var(--accent-color);
+        box-shadow: inset 3px 0 0 var(--accent-color);
+      }
+
+      .exp-import-row.skipped {
+        opacity: 0.58;
+      }
+
+      .exp-import-index {
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 800;
+        text-align: right;
+        padding-top: 2px;
+      }
+
+      .exp-import-thumb {
+        width: 72px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+        background: var(--bg-surface-strong);
+        border: 1px solid var(--border-color);
+      }
+
+      .exp-import-fields {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 6px;
+      }
+
+      .exp-import-row .ctrl-input,
+      .exp-import-row .ctrl-select {
+        padding: 7px 8px;
+        font-size: 12px;
+      }
+
+      .exp-import-full {
+        grid-column: 1 / -1;
+      }
+
+      .exp-import-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .exp-import-row button {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+      }
+
+      .exp-import-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-width: 0;
+      }
+
+      .exp-import-status-text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .exp-import-folder-note {
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.25;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .exp-import-summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: var(--text-muted);
+        font-size: 12px;
+        min-height: 18px;
+      }
+
+      .exp-import-progress {
+        position: relative;
+        flex-basis: 100%;
+        height: 3px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--bg-surface-strong);
+      }
+
+      .exp-import-progress::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 34%;
+        border-radius: inherit;
+        background: var(--accent-color);
+        animation: expImportProgress 1s ease-in-out infinite;
+      }
+
+      .exp-import-spinner {
+        width: 12px;
+        height: 12px;
+        flex: 0 0 auto;
+        border: 2px solid var(--border-color);
+        border-top-color: var(--accent-color);
+        border-radius: 50%;
+        animation: expImportSpin 0.8s linear infinite;
+      }
+
+      .exp-import-candidates {
+        grid-column: 3 / -1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding-top: 2px;
+      }
+
+      .exp-import-candidate {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: 8px;
+        align-items: center;
+        padding: 6px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-surface);
+        cursor: pointer;
+      }
+
+      .exp-import-candidate:hover {
+        border-color: var(--accent-color);
+      }
+
+      .exp-import-candidate.selected {
+        border-color: var(--accent-color);
+        background: var(--accent-soft);
+      }
+
+      @keyframes expImportSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes expImportProgress {
+        0% {
+          left: -34%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .exp-admin-workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .exp-editor-grid,
+        .exp-image-block,
+        .exp-related-grid,
+        .exp-album-tools,
+        .exp-song-editor-layout,
+        .exp-import-controls,
+        .exp-import-row,
+        .exp-import-fields,
+        .exp-external-import-panel {
+          grid-template-columns: 1fr;
+        }
+
+        .exp-import-candidates {
+          grid-column: 1;
+        }
+
+        .exp-header-controls {
+          min-width: 100%;
+          justify-content: flex-start;
+        }
+
+        .exp-lyrics-panel {
+          position: static;
+        }
+      }
     </style>
   </head>
-  <body>
+  <body class="admin-page experimental-admin">
+    <script>
+      const ADMIN_THEME_CLASSES = [
+        "theme-neon",
+        "theme-midnight",
+        "theme-rose",
+        "theme-light",
+        "theme-graphite",
+        "theme-dusk",
+        "theme-fresh",
+      ];
+      const savedAdminTheme = localStorage.getItem("appTheme");
+      if (
+        savedAdminTheme &&
+        savedAdminTheme !== "default" &&
+        ADMIN_THEME_CLASSES.includes(savedAdminTheme)
+      ) {
+        document.body.classList.add(savedAdminTheme);
+      }
+    </script>
     <script src="database_artists.js"></script>
     <script src="database_albums.js"></script>
     <script src="database_songs.js"></script>
@@ -173,375 +923,59 @@
 
     <div class="admin-container">
       <div class="form-panel">
-        <div class="tabs">
-          <button
-            id="btn-tab-artist"
-            class="tab-btn"
-            onclick="switchTab('artist')"
-          >
-            Add Artist
-          </button>
-          <button
-            id="btn-tab-album"
-            class="tab-btn active"
-            onclick="switchTab('album')"
-          >
-            Add Album
-          </button>
-          <button id="btn-tab-auto" class="tab-btn" onclick="switchTab('auto')">
-            Auto Downloader
-          </button>
-
-          <a
-            href="newmusic://"
-            id="btn-run-script"
-            class="btn-primary"
-            style="
-              background: #ff0050;
-              color: white;
-              text-decoration: none;
-              padding: 10px 20px;
-              border-radius: 20px;
-              font-size: 13px;
-              margin-left: auto;
-            "
-          >
-            Run Downloader Script
-          </a>
-        </div>
-
-        <div id="tab-artist" class="tab-content">
-          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
-            New Artist
-          </h2>
-
-          <label>Artist Name</label>
-          <input
-            type="text"
-            id="art-name"
-            class="ctrl-input"
-            placeholder="e.g. Artist Name"
-          />
-
-          <label>Start Year (Active Since)</label>
-          <input
-            type="number"
-            id="art-start"
-            class="ctrl-input"
-            placeholder="e.g. YYYY"
-          />
-
-          <label>First Listen Year</label>
-          <input
-            type="number"
-            id="art-first"
-            class="ctrl-input"
-            placeholder="e.g. YYYY"
-          />
-
-          <label>Country</label>
-          <input
-            type="text"
-            id="art-country"
-            class="ctrl-input"
-            placeholder="e.g. Country Name"
-          />
-
-          <label>Genres (Comma-separated)</label>
-          <input
-            type="text"
-            id="art-genres"
-            class="ctrl-input"
-            placeholder="e.g. Pop, Electronic, Rock"
-          />
-
-          <label>Tags (Comma-separated)</label>
-          <input
-            type="text"
-            id="art-tags"
-            class="ctrl-input"
-            placeholder="e.g. energetic, atmospheric"
-          />
-
-          <label>Members (Comma-separated)</label>
-          <input
-            type="text"
-            id="art-members"
-            class="ctrl-input"
-            placeholder="e.g. Member 1, Member 2"
-          />
-
-          <button
-            onclick="generateArtistCode()"
-            class="btn-primary"
-            style="width: 100%; margin-top: 30px"
-          >
-            Generate Artist Code
-          </button>
-        </div>
-
-        <div id="tab-album" class="tab-content active">
-          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
-            New Album & Tracks
-          </h2>
-
-          <label>Album Title</label>
-          <input
-            type="text"
-            id="alb-title"
-            class="ctrl-input"
-            placeholder="e.g. Album Title"
-          />
-
-          <label>Artist (Autocomplete from DB)</label>
-          <select id="alb-artist" class="ctrl-select"></select>
-
-          <label>Release Date (DD/MM/YYYY, MM/YYYY, or YYYY)</label>
-          <input
-            type="text"
-            id="alb-date"
-            class="ctrl-input"
-            placeholder="e.g. DD/MM/YYYY"
-          />
-
-          <label
-            >First Listen Date (DD/MM/YYYY, MM/YYYY, or YYYY) [Optional]</label
-          >
-          <input
-            type="text"
-            id="alb-firstdate"
-            class="ctrl-input"
-            placeholder="e.g. MM/YYYY"
-          />
-
-          <label>Album Type</label>
-          <select id="alb-type" class="ctrl-select">
-            <option value="album">Album</option>
-            <option value="ep">EP</option>
-            <option value="single">Single</option>
-            <option value="compilation">Compilation</option>
-          </select>
-
-          <label>Album Genres (Comma-separated)</label>
-          <input
-            type="text"
-            id="alb-genres"
-            class="ctrl-input"
-            placeholder="e.g. Pop, Indie"
-          />
-
-          <label>Album Tags (Comma-separated)</label>
-          <input
-            type="text"
-            id="alb-tags"
-            class="ctrl-input"
-            placeholder="e.g. masterpiece, conceptual"
-          />
-
-          <hr style="border-color: #282828; margin: 30px 0" />
-
-          <label>Number of Tracks</label>
-          <div style="display: flex; gap: 12px; align-items: center">
-            <input
-              type="number"
-              id="alb-trackcount"
-              class="ctrl-input"
-              value="1"
-              min="1"
-              style="width: 100px; margin: 0"
-            />
-            <button
-              onclick="buildTrackFields()"
-              class="btn-secondary"
-              style="margin: 0"
-            >
-              Build Track Rows
-            </button>
+        <div class="exp-admin-shell">
+          <div id="exp-status" style="min-height:18px; color:var(--text-muted); font-size:12px;"></div>
+          <div id="experimental-workspace" style="display:flex; flex:1; min-height:0; align-items:center; justify-content:center; color:var(--text-muted);">
+            Choose Artists, Albums, or Songs to start.
           </div>
-
-          <div id="track-fields-container" style="margin-top: 20px"></div>
-
-          <button
-            onclick="generateAlbumCode()"
-            class="btn-primary"
-            style="width: 100%; margin-top: 30px"
-          >
-            Generate Bulk Code
-          </button>
-        </div>
-
-        <div id="tab-auto" class="tab-content">
-          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
-            Search & Download Song
-          </h2>
-
-          <label>Search YouTube</label>
-          <div style="display: flex; gap: 12px; align-items: center">
-            <input
-              type="text"
-              id="auto-search"
-              class="ctrl-input"
-              placeholder="e.g. Song Title Search..."
-              style="margin: 0"
-            />
-            <button
-              onclick="mockSearchYoutube()"
-              class="btn-primary"
-              style="
-                background: #ff0050;
-                color: white;
-                border: none;
-                margin: 0;
-                min-width: 120px;
-              "
-            >
-              Search
-            </button>
-          </div>
-
-          <div
-            id="auto-search-results"
-            style="
-              margin-top: 15px;
-              display: none;
-              background: #121212;
-              padding: 15px;
-              border-radius: 8px;
-              border: 1px solid #282828;
-            "
-          >
-            <p style="margin: 0; color: var(--text-muted); font-size: 13px">
-              [App Backend Will Inject Results Here]
-            </p>
-          </div>
-
-          <hr style="border-color: #282828; margin: 30px 0" />
-
-          <h2 class="header-title" style="font-size: 20px; margin-bottom: 0">
-            Song Metadata
-          </h2>
-
-          <label>Artist</label>
-          <div style="display: flex; gap: 12px; align-items: center">
-            <select
-              id="auto-artist-select"
-              class="ctrl-select"
-              style="margin: 0"
-            ></select>
-            <button
-              id="btn-toggle-artist"
-              onclick="toggleNewArtist()"
-              class="btn-secondary"
-              style="margin: 0; min-width: 130px"
-            >
-              + New Artist
-            </button>
-          </div>
-          <input
-            type="text"
-            id="auto-new-artist"
-            class="ctrl-input"
-            placeholder="Type new artist name..."
-            style="display: none; margin-top: 12px"
-          />
-
-          <label>Release Date (Auto-filled from YouTube)</label>
-          <div style="display: flex; gap: 12px; align-items: center">
-            <input
-              type="date"
-              id="auto-release-date"
-              class="ctrl-input"
-              disabled
-              style="opacity: 0.5; margin: 0"
-            />
-            <button
-              onclick="toggleManualDate()"
-              class="btn-secondary"
-              style="margin: 0; min-width: 130px"
-            >
-              Manual Input
-            </button>
-          </div>
-
-          <label>First Listen Date (Optional)</label>
-          <input type="date" id="auto-first-listen" class="ctrl-input" />
-
-          <label>Genres (Comma-separated, Optional)</label>
-          <input
-            type="text"
-            id="auto-genres"
-            class="ctrl-input"
-            placeholder="e.g. Synthwave, Electronic"
-          />
-
-          <label>Tags (Comma-separated, Optional)</label>
-          <input
-            type="text"
-            id="auto-tags"
-            class="ctrl-input"
-            placeholder="e.g. energetic, masterpiece"
-          />
-
-          <button
-            onclick="triggerAppDownload()"
-            class="btn-primary"
-            style="width: 100%; margin-top: 30px"
-          >
-            Download & Add to Database
-          </button>
-        </div>
-      </div>
-
-      <div class="output-panel">
-        <div class="output-section" id="section-out-1">
-          <h2
-            id="title-out-1"
-            class="header-title"
-            style="font-size: 18px; margin-bottom: 15px"
-          >
-            Album Code
-          </h2>
-          <textarea
-            id="out-box-1"
-            class="ctrl-input"
-            readonly
-            placeholder="Output will appear here..."
-          ></textarea>
-          <button
-            id="btn-copy-1"
-            class="btn-secondary"
-            onclick="copyToClipboard('out-box-1', 'btn-copy-1')"
-          >
-            Copy Album Code
-          </button>
-        </div>
-
-        <div class="output-section" id="section-out-2">
-          <h2 class="header-title" style="font-size: 18px; margin-bottom: 15px">
-            Songs Code
-          </h2>
-          <textarea
-            id="out-box-2"
-            class="ctrl-input"
-            readonly
-            placeholder="Songs output will appear here..."
-          ></textarea>
-          <button
-            id="btn-copy-2"
-            class="btn-secondary"
-            onclick="copyToClipboard('out-box-2', 'btn-copy-2')"
-          >
-            Copy Songs Code
-          </button>
         </div>
       </div>
     </div>
 
     <script>
       // ==========================================
+      // 0. PREVENT ACCIDENTAL BACK NAVIGATION
+      // ==========================================
+      // Trap the history state so 'Back' actions do nothing
+      history.pushState(null, null, location.href);
+      window.addEventListener("popstate", function () {
+        history.pushState(null, null, location.href);
+      });
+
+      // Explicitly block side mouse buttons (Button 3 = Back, Button 4 = Forward)
+      window.addEventListener("mousedown", function (e) {
+        if (e.button === 3 || e.button === 4) {
+          e.preventDefault();
+        }
+      });
+
+      document.body.classList.toggle(
+        "tips-enabled",
+        localStorage.getItem("isTipsMode") !== "false",
+      );
+
+      // ==========================================
       // 1. ELECTRON BACKEND CONNECTION & UI MODALS
       // ==========================================
-      const { ipcRenderer } = require("electron");
+      const { ipcRenderer, shell } = require("electron");
+      const { exec } = require("child_process");
+      const path = require("path");
+      const fs = require("fs");
+      const os = require("os");
+      const childProcess = require("child_process");
+
+      // Function to launch the batch script in a new terminal
+      window.runBatchScript = function () {
+        // __dirname resolves to the current folder of this HTML file
+        const batPath = path.join(__dirname, "SONG_DOWNLOAD.bat");
+
+        // 'start ""' tells Windows to open a new interactive command prompt window
+        exec(`start "" "${batPath}"`, (error) => {
+          if (error) {
+            alert("Failed to launch script: " + error.message);
+          }
+        });
+      };
 
       // Inject custom NewMusic Alert Modal
       window.showCustomAlert = function (msg) {
@@ -554,7 +988,7 @@
           "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:999999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);";
 
         overlay.innerHTML = `
-              <div class="modal-box" style="width:360px; padding: 28px; background: #181818; border: 1px solid #282828; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); text-align: center;">
+              <div class="modal-box" style="width:360px; padding: 28px; text-align: center;">
                   <p style="color: var(--text-main); margin: 0 0 24px 0; font-size: 15px; font-weight: 500; line-height: 1.5;">${msg}</p>
                   <button class="btn-primary" style="justify-content: center; width: 100%; padding: 12px;" onclick="document.getElementById('custom-app-modal').remove()">OK</button>
               </div>
@@ -574,48 +1008,10 @@
       // 2. INITIALIZATION & TAB SWITCHING
       // ==========================================
       window.onload = () => {
-        // Enforce the Auto Downloader Toggle logic
-        const isAutoDLMode = localStorage.getItem("isAutoDLMode") === "true";
-
-        if (isAutoDLMode) {
-          // Auto Mode ON: Hide the manual script button and manual tabs
-          const scriptBtn = document.querySelector('a[href="newmusic://"]');
-          if (scriptBtn) scriptBtn.style.display = "none";
-
-          document.getElementById("btn-tab-artist").style.display = "none";
-          document.getElementById("btn-tab-album").style.display = "none";
-
-          // Make the Auto tab the active one since manual tabs are hidden
-          switchTab("auto");
-        } else {
-          // Manual Mode OFF (Default): Hide the Auto Downloader tab
-          document.getElementById("btn-tab-auto").style.display = "none";
-        }
-
-        const artistSelect = document.getElementById("alb-artist");
-        if (typeof artistsDatabase !== "undefined") {
-          artistsDatabase.forEach((art) => {
-            const option = document.createElement("option");
-            option.value = art.artistID;
-            option.textContent = art.artist;
-            artistSelect.appendChild(option);
-          });
-        } else {
-          artistSelect.innerHTML =
-            "<option value='art_unknown'>No database loaded</option>";
-        }
-        buildTrackFields();
-
-        // Populate the Auto Downloader artist select too
-        const autoSelect = document.getElementById("auto-artist-select");
-        if (typeof artistsDatabase !== "undefined") {
-          artistsDatabase.forEach((art) => {
-            const option = document.createElement("option");
-            option.value = art.artistID;
-            option.textContent = art.artist;
-            autoSelect.appendChild(option);
-          });
-        }
+        // Experimental admin is now the only/default admin interface.
+        localStorage.removeItem("isAutoDLMode");
+        localStorage.setItem("isExperimentalMode", "true");
+        initExperimentalAdmin();
       };
 
       function switchTab(tab) {
@@ -643,6 +1039,2403 @@
       }
 
       // ==========================================
+      // EXPERIMENTAL DATABASE MANAGER
+      // ==========================================
+      const expState = {
+        section: null,
+        selectedId: null,
+        search: "",
+        albumTypeFilter: ["album", "ep", "single", "compilation"],
+        dragId: null,
+        trackDragId: null,
+        youtubeResult: null,
+        lastArtistID: null,
+        lastAlbumID: null,
+      };
+
+      const spotifyImportState = {
+        playlistUrl: "",
+        tracks: [],
+        activeRowId: null,
+        searching: false,
+        downloading: false,
+        cancelRequested: false,
+        downloadCancelRequested: false,
+        searchRunId: 0,
+      };
+
+      const externalPlaylistImportWatch = {
+        timer: null,
+        startedAt: 0,
+      };
+
+      function expIsSpotifyImportEnabled() {
+        return localStorage.getItem("isSpotifyPlaylistImportEnabled") === "true";
+      }
+
+      const EXP_SECTIONS = {
+        artists: {
+          label: "Artists",
+          idKey: "artistID",
+          titleKey: "artist",
+          file: "database_artists.js",
+          varName: "artistsDatabase",
+          data: () => artistsDatabase,
+        },
+        albums: {
+          label: "Albums",
+          idKey: "albumID",
+          titleKey: "title",
+          file: "database_albums.js",
+          varName: "albumsDatabase",
+          data: () => albumsDatabase,
+        },
+        songs: {
+          label: "Songs",
+          idKey: "songID",
+          titleKey: "title",
+          file: "database_songs.js",
+          varName: "songsDatabase",
+          data: () => songsDatabase,
+        },
+      };
+
+      const EXP_ALBUM_TYPE_OPTIONS = [
+        { value: "album", label: "Albums" },
+        { value: "ep", label: "EPs" },
+        { value: "single", label: "Singles" },
+        { value: "compilation", label: "Compilations" },
+      ];
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function escapeAttr(value) {
+        return escapeHtml(value).replace(/`/g, "&#096;");
+      }
+
+      function csvToArray(value, lowercase = true) {
+        return String(value || "")
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .map((item) => (lowercase ? item.toLowerCase() : item));
+      }
+
+      function arrayToCsv(value) {
+        return Array.isArray(value) ? value.join(", ") : "";
+      }
+
+      function relToAbs(relPath) {
+        return path.join(__dirname, String(relPath || "").replace(/^\.\//, ""));
+      }
+
+      function normalizeRelPath(relPath) {
+        return (
+          "./" +
+          String(relPath || "")
+            .replace(/\\/g, "/")
+            .replace(/^\.\//, "")
+        );
+      }
+
+      function getArtistById(artistID) {
+        return artistsDatabase.find((artist) => artist.artistID === artistID);
+      }
+
+      function getAlbumById(albumID) {
+        return albumsDatabase.find((album) => album.albumID === albumID);
+      }
+
+      function getArtistSlugFromArtist(artist) {
+        const cover = artist?.paths?.cover || "";
+        const match = cover.match(/\.\/assets\/([^/]+)\//);
+        return match
+          ? match[1]
+          : String(artist?.artistID || "").replace(/^art_/, "");
+      }
+
+      function getArtistSlugById(artistID) {
+        return (
+          getArtistSlugFromArtist(getArtistById(artistID)) ||
+          String(artistID || "").replace(/^art_/, "")
+        );
+      }
+
+      function getItemImage(section, item) {
+        if (!item) return "./logo.png";
+        if (section === "songs") {
+          const album = getAlbumById(item.albumID);
+          return album?.paths?.cover || "./logo.png";
+        }
+        return item.paths?.cover || "./logo.png";
+      }
+
+      function getItemMeta(section, item) {
+        if (section === "artists") {
+          return (
+            [item.country, arrayToCsv(item.genre)]
+              .filter(Boolean)
+              .join(" | ") || item.artistID
+          );
+        }
+        if (section === "albums") {
+          const artist = getArtistById(item.artistID);
+          return (
+            [artist?.artist, item.releaseDate, item.albumType]
+              .filter(Boolean)
+              .join(" | ") || item.albumID
+          );
+        }
+        const artist = getArtistById(item.artistID);
+        const album = getAlbumById(item.albumID);
+        return (
+          [
+            artist?.artist,
+            album?.title,
+            item.track ? `Track ${item.track}` : "",
+          ]
+            .filter(Boolean)
+            .join(" | ") || item.songID
+        );
+      }
+
+      function expWriteDatabase(file, varName, data) {
+        const filePath = path.join(__dirname, file);
+        fs.writeFileSync(
+          filePath,
+          `const ${varName} = ${JSON.stringify(data, null, 2)};\n`,
+          "utf8",
+        );
+      }
+
+      function expSortSongsForDatabaseStorage() {
+        const albumOrder = new Map(
+          albumsDatabase.map((album, index) => [album.albumID, index]),
+        );
+        const originalOrder = new Map(
+          songsDatabase.map((song, index) => [song.songID, index]),
+        );
+        songsDatabase.sort((a, b) => {
+          const albumA = albumOrder.has(a.albumID)
+            ? albumOrder.get(a.albumID)
+            : Number.MAX_SAFE_INTEGER;
+          const albumB = albumOrder.has(b.albumID)
+            ? albumOrder.get(b.albumID)
+            : Number.MAX_SAFE_INTEGER;
+          if (albumA !== albumB) return albumA - albumB;
+          const trackA = parseInt(a.track, 10) || 0;
+          const trackB = parseInt(b.track, 10) || 0;
+          if (trackA !== trackB) return trackB - trackA;
+          return (
+            (originalOrder.get(a.songID) || 0) -
+            (originalOrder.get(b.songID) || 0)
+          );
+        });
+      }
+
+      function expSaveDatabases(message = "Experimental database saved.") {
+        expSortSongsForDatabaseStorage();
+        expWriteDatabase(
+          "database_artists.js",
+          "artistsDatabase",
+          artistsDatabase,
+        );
+        expWriteDatabase(
+          "database_albums.js",
+          "albumsDatabase",
+          albumsDatabase,
+        );
+        expWriteDatabase("database_songs.js", "songsDatabase", songsDatabase);
+        const log = document.getElementById("exp-status");
+        if (log) log.textContent = message;
+      }
+
+      function expEnsureArtistFolders(slug) {
+        const artistDir = path.join(__dirname, "assets", slug);
+        ["songs", "lyrics", "albums"].forEach((folder) => {
+          fs.mkdirSync(path.join(artistDir, folder), { recursive: true });
+        });
+        const profilePath = path.join(artistDir, "profile.png");
+        if (!fs.existsSync(profilePath)) {
+          const logoPath = path.join(__dirname, "logo.png");
+          if (fs.existsSync(logoPath)) fs.copyFileSync(logoPath, profilePath);
+        }
+      }
+
+      function expUniqueSlug(name, takenIds, prefix = "") {
+        const base = makeSlug(name) || "untitled";
+        let slug = base;
+        let index = 2;
+        while (takenIds.has(prefix + slug)) {
+          slug = `${base}_${index}`;
+          index++;
+        }
+        return slug;
+      }
+
+      function expAskText(message, defaultValue = "") {
+        return new Promise((resolve) => {
+          const existing = document.getElementById("exp-text-modal");
+          if (existing) existing.remove();
+
+          const overlay = document.createElement("div");
+          overlay.id = "exp-text-modal";
+          overlay.style.cssText =
+            "position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:999999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);";
+          overlay.innerHTML = `
+            <div class="modal-box" style="width:420px; max-width:calc(100vw - 40px); padding:24px;">
+              <p style="color:var(--text-main); margin:0 0 14px; font-size:15px; font-weight:700;">${escapeHtml(message)}</p>
+              <input id="exp-text-modal-input" class="ctrl-input" type="text" value="${escapeAttr(defaultValue)}" style="width:100%; margin:0 0 18px;">
+              <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button id="exp-text-modal-cancel" class="btn-secondary" style="margin:0; padding:10px 18px;">Cancel</button>
+                <button id="exp-text-modal-ok" class="btn-primary" style="margin:0; padding:10px 18px;">Create</button>
+              </div>
+            </div>`;
+          document.body.appendChild(overlay);
+
+          const input = document.getElementById("exp-text-modal-input");
+          const close = (value) => {
+            overlay.remove();
+            resolve(value);
+          };
+          document
+            .getElementById("exp-text-modal-cancel")
+            .addEventListener("click", () => close(null));
+          document
+            .getElementById("exp-text-modal-ok")
+            .addEventListener("click", () => close(input.value.trim()));
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") close(input.value.trim());
+            if (event.key === "Escape") close(null);
+          });
+          setTimeout(() => input.focus(), 0);
+        });
+      }
+
+      function expAskConfirm(
+        message,
+        title = "Confirm delete",
+        requiredText = "",
+      ) {
+        return new Promise((resolve) => {
+          const existing = document.getElementById("exp-confirm-modal");
+          if (existing) existing.remove();
+
+          const required = String(requiredText || "").trim();
+          const overlay = document.createElement("div");
+          overlay.id = "exp-confirm-modal";
+          overlay.style.cssText =
+            "position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:999999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);";
+          overlay.innerHTML = `
+            <div class="modal-box" style="width:480px; max-width:calc(100vw - 40px); padding:24px; border:1px solid rgba(255,0,80,0.45);">
+              <h3 style="color:#ff4f7f; margin:0 0 12px; font-size:17px;">${escapeHtml(title)}</h3>
+              <p style="color:var(--text-main); margin:0 0 10px; font-size:15px; line-height:1.45;">${escapeHtml(message)}</p>
+              <p style="color:var(--text-muted); margin:0 0 14px; font-size:12px; line-height:1.45;">This removes database entries only. Asset files stay on disk so this is safer if you clicked by mistake.</p>
+              ${
+                required
+                  ? `
+                <label style="margin-top:0; color:#ff8aa8;">Type this exactly to confirm</label>
+                <div style="font-size:13px; font-weight:800; color:var(--text-main); background:var(--bg-surface); border:1px solid rgba(255,0,80,0.35); border-radius:8px; padding:10px 12px; margin-bottom:10px; user-select:text;">${escapeHtml(required)}</div>
+                <input id="exp-confirm-input" class="ctrl-input" type="text" autocomplete="off" placeholder="Type the exact name here..." style="width:100%; margin:0 0 18px; border-color:rgba(255,0,80,0.35);">
+              `
+                  : ""
+              }
+              <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button id="exp-confirm-cancel" class="btn-secondary" style="margin:0; padding:10px 18px;">Cancel</button>
+                <button id="exp-confirm-delete" class="btn-danger" style="margin:0; ${required ? "opacity:0.45; cursor:not-allowed;" : ""}" ${required ? "disabled" : ""}>Delete</button>
+              </div>
+            </div>`;
+          document.body.appendChild(overlay);
+
+          const input = document.getElementById("exp-confirm-input");
+          const deleteBtn = document.getElementById("exp-confirm-delete");
+          const close = (value) => {
+            overlay.remove();
+            resolve(value);
+          };
+          const updateDeleteState = () => {
+            if (!required || !input || !deleteBtn) return;
+            const matches = input.value.trim() === required;
+            deleteBtn.disabled = !matches;
+            deleteBtn.style.opacity = matches ? "1" : "0.45";
+            deleteBtn.style.cursor = matches ? "pointer" : "not-allowed";
+          };
+          document
+            .getElementById("exp-confirm-cancel")
+            .addEventListener("click", () => close(false));
+          deleteBtn.addEventListener("click", () => {
+            if (required && (!input || input.value.trim() !== required)) return;
+            close(true);
+          });
+          if (input) {
+            input.addEventListener("input", updateDeleteState);
+            input.addEventListener("keydown", (event) => {
+              if (event.key === "Enter" && input.value.trim() === required)
+                close(true);
+              if (event.key === "Escape") close(false);
+            });
+            setTimeout(() => input.focus(), 0);
+            updateDeleteState();
+          }
+          overlay.addEventListener("click", (event) => {
+            if (event.target === overlay) close(false);
+          });
+          window.addEventListener("keydown", function onKey(event) {
+            if (!document.getElementById("exp-confirm-modal")) {
+              window.removeEventListener("keydown", onKey);
+              return;
+            }
+            if (event.key === "Escape") {
+              window.removeEventListener("keydown", onKey);
+              close(false);
+            }
+          });
+        });
+      }
+
+      function initExperimentalAdmin() {
+        document.body.classList.add("experimental-admin");
+        const outputPanel = document.querySelector(".output-panel");
+        if (outputPanel) outputPanel.style.display = "none";
+
+        const header = document.querySelector(".admin-header");
+        if (header && !document.getElementById("exp-header-controls")) {
+          const headerControls = document.createElement("div");
+          headerControls.id = "exp-header-controls";
+          headerControls.className = "exp-header-controls";
+          headerControls.innerHTML = `
+            <div class="exp-header-section-picker">
+              <button class="tab-btn" id="exp-section-artists" onclick="expSelectSection('artists')">Artists</button>
+              <button class="tab-btn" id="exp-section-albums" onclick="expSelectSection('albums')">Albums</button>
+              <button class="tab-btn" id="exp-section-songs" onclick="expSelectSection('songs')">Songs</button>
+              ${expIsSpotifyImportEnabled() ? `<button class="tab-btn" id="exp-section-spotify-import" onclick="expSelectSection('spotify-import')">Playlist Import</button>` : ""}
+            </div>
+          `;
+          const backLink = header.querySelector('a[href="index.html"]');
+          header.insertBefore(headerControls, backLink || null);
+        }
+
+        const formPanel = document.querySelector(".form-panel");
+        if (!formPanel) return;
+
+        formPanel.innerHTML = `
+          <div class="exp-admin-shell">
+            <div id="exp-status" style="min-height:18px; color:var(--text-muted); font-size:12px;"></div>
+            <div id="experimental-workspace" style="display:flex; flex:1; min-height:0; align-items:center; justify-content:center; color:var(--text-muted);">
+              Choose Artists, Albums, or Songs to start.
+            </div>
+          </div>
+        `;
+      }
+
+      window.expSelectSection = function (section) {
+        expState.section = section;
+        expState.selectedId = null;
+        expState.search = "";
+        expState.youtubeResult = null;
+        renderExperimentalSection();
+      };
+
+      function renderExperimentalSection() {
+        const section = expState.section;
+        Object.keys(EXP_SECTIONS).forEach((key) => {
+          const btn = document.getElementById(`exp-section-${key}`);
+          if (btn) btn.classList.toggle("active", key === section);
+        });
+        const importBtn = document.getElementById("exp-section-spotify-import");
+        if (importBtn) importBtn.classList.toggle("active", section === "spotify-import");
+        if (section === "spotify-import") {
+          if (!expIsSpotifyImportEnabled()) {
+            const workspace = document.getElementById("experimental-workspace");
+            if (workspace) {
+              workspace.style.alignItems = "center";
+              workspace.style.justifyContent = "center";
+              workspace.style.color = "var(--text-muted)";
+              workspace.innerHTML = "Enable Playlist Import in Settings first.";
+            }
+            return;
+          }
+          renderSpotifyImportSection();
+          return;
+        }
+        const cfg = EXP_SECTIONS[section];
+        if (!cfg) return;
+        const workspace = document.getElementById("experimental-workspace");
+        if (!workspace) return;
+        workspace.style.alignItems = "stretch";
+        workspace.style.justifyContent = "stretch";
+        workspace.style.color = "";
+        workspace.style.overflow = "hidden";
+        workspace.innerHTML = `
+          <div class="exp-admin-workspace">
+            <div class="exp-list-panel">
+              <div class="exp-list-controls">
+                <input id="exp-search" class="ctrl-input" type="text" placeholder="Search ${cfg.label.toLowerCase()}..." value="${escapeAttr(expState.search)}" oninput="expSetSearch(this.value)" style="margin:0; flex:1;">
+                <button class="btn-secondary" style="margin:0; padding:10px 14px;" onclick="expCreateItem()">New</button>
+              </div>
+              ${section === "albums" ? renderAlbumTypeFilters() : ""}
+              <div id="exp-list" class="exp-list"></div>
+            </div>
+            <div id="exp-editor" class="exp-editor-panel"></div>
+          </div>
+        `;
+        const formPanel = document.querySelector(".form-panel");
+        if (formPanel) formPanel.scrollTop = 0;
+        renderExperimentalList();
+        renderExperimentalEditor();
+      }
+
+      function renderAlbumTypeFilters() {
+        const selected = new Set(expState.albumTypeFilter);
+        return `
+          <div class="exp-type-filter">
+            ${EXP_ALBUM_TYPE_OPTIONS.map(
+              (type) => `
+              <label>
+                <input type="checkbox" ${selected.has(type.value) ? "checked" : ""} onchange="expToggleAlbumType('${type.value}', this.checked)">
+                ${type.label}
+              </label>
+            `,
+            ).join("")}
+          </div>`;
+      }
+
+      window.expToggleAlbumType = function (type, checked) {
+        const current = new Set(expState.albumTypeFilter);
+        if (checked) current.add(type);
+        else current.delete(type);
+        expState.albumTypeFilter = EXP_ALBUM_TYPE_OPTIONS.map(
+          (option) => option.value,
+        ).filter((value) => current.has(value));
+        renderExperimentalList();
+      };
+
+      window.expSetSearch = function (value) {
+        expState.search = value;
+        renderExperimentalList();
+      };
+
+      function getFilteredExperimentalItems() {
+        const cfg = EXP_SECTIONS[expState.section];
+        if (!cfg) return [];
+        const term = expState.search.trim().toLowerCase();
+        return cfg.data().filter((item) => {
+          if (expState.section === "albums") {
+            const type = String(item.albumType || "album").toLowerCase();
+            if (!expState.albumTypeFilter.includes(type)) return false;
+          }
+          if (!term) return true;
+          return [
+            item[cfg.idKey],
+            item[cfg.titleKey],
+            getItemMeta(expState.section, item),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(term);
+        });
+      }
+
+      function renderExperimentalList() {
+        const cfg = EXP_SECTIONS[expState.section];
+        const list = document.getElementById("exp-list");
+        if (!cfg || !list) return;
+        const items = getFilteredExperimentalItems();
+        if (items.length === 0) {
+          list.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">No ${cfg.label.toLowerCase()} found.</div>`;
+          return;
+        }
+        list.innerHTML = items
+          .map((item) => {
+            const id = item[cfg.idKey];
+            return `
+            <div class="exp-list-item ${id === expState.selectedId ? "active" : ""}" draggable="true" ondragstart="expStartDrag(event, '${escapeAttr(id)}')" ondragover="expDragOver(event, this)" ondragleave="expDragLeave(this)" ondrop="expDropItem(event, '${escapeAttr(id)}', this)" ondragend="expDragEnd()" onclick="expSelectItem('${escapeAttr(id)}')">
+              <div class="exp-drag-handle" title="Drag to reorder">☰</div>
+              <img class="exp-thumb" src="${escapeAttr(getItemImage(expState.section, item))}?v=${Date.now()}" onerror="this.src='./logo.png'">
+              <div style="min-width:0;">
+                <div class="exp-item-title">${escapeHtml(item[cfg.titleKey])}</div>
+                <div class="exp-item-meta">${escapeHtml(getItemMeta(expState.section, item))}</div>
+              </div>
+            </div>`;
+          })
+          .join("");
+      }
+
+      window.expSelectItem = function (id) {
+        expState.selectedId = id;
+        expState.youtubeResult = null;
+        if (expState.section === "artists") expState.lastArtistID = id;
+        if (expState.section === "albums") {
+          expState.lastAlbumID = id;
+          const album = getAlbumById(id);
+          if (album?.artistID) expState.lastArtistID = album.artistID;
+        }
+        if (expState.section === "songs") {
+          const song = songsDatabase.find((entry) => entry.songID === id);
+          if (song?.albumID) expState.lastAlbumID = song.albumID;
+          if (song?.artistID) expState.lastArtistID = song.artistID;
+        }
+        renderExperimentalList();
+        renderExperimentalEditor();
+      };
+
+      function renderExperimentalEditor() {
+        const cfg = EXP_SECTIONS[expState.section];
+        const editor = document.getElementById("exp-editor");
+        if (!cfg || !editor) return;
+        const item = cfg
+          .data()
+          .find((entry) => entry[cfg.idKey] === expState.selectedId);
+        if (!item) {
+          editor.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">Select a ${cfg.label.slice(0, -1).toLowerCase()} to edit.</div>`;
+          return;
+        }
+        if (expState.section === "artists") renderArtistEditor(item, editor);
+        if (expState.section === "albums") renderAlbumEditor(item, editor);
+        if (expState.section === "songs") renderSongEditor(item, editor);
+      }
+
+      function expField(id, label, value, span = "") {
+        return `<div class="${span}"><label>${label}</label><input id="${id}" class="ctrl-input" type="text" value="${escapeAttr(value)}"></div>`;
+      }
+
+      function expSelectField(id, label, value, options) {
+        return `<div><label>${label}</label><select id="${id}" class="ctrl-select">${options.map((opt) => `<option value="${escapeAttr(opt.value)}" ${opt.value === value ? "selected" : ""}>${escapeHtml(opt.label)}</option>`).join("")}</select></div>`;
+      }
+
+      function renderImageBlock(section, item, id, label) {
+        const image = getItemImage(section, item);
+        return `
+          <div class="exp-image-block">
+            <img class="exp-image-preview" src="${escapeAttr(image)}?v=${Date.now()}" onerror="this.src='./logo.png'">
+            <div>
+              <label style="margin-top:0;">${label}</label>
+              <input class="ctrl-input" type="file" accept="image/*" onchange="expUploadImage('${section}', '${escapeAttr(id)}', this)">
+              <div style="color:var(--text-muted); font-size:12px; margin-top:8px;">Uploads are cropped and saved as 1200x1200 PNG.</div>
+            </div>
+          </div>`;
+      }
+
+      function expFindArtistByName(name) {
+        const slug = makeSlug(name || "");
+        if (!slug) return null;
+        return artistsDatabase.find((artist) => makeSlug(artist.artist) === slug);
+      }
+
+      function expTodayIso() {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        return `${now.getFullYear()}-${month}-${day}`;
+      }
+
+      function expFormatViews(value) {
+        const count = Number(value || 0);
+        return count ? `${count.toLocaleString()} views` : "views unknown";
+      }
+
+      function expGetSpotifyImportRow(rowId) {
+        return spotifyImportState.tracks.find((row) => row.id === rowId);
+      }
+
+      function expBuildSpotifyImportRow(track, index) {
+        const artists = Array.isArray(track.artists) ? track.artists : [];
+        const primaryArtist = artists[0] || "Unknown Artist";
+        const matchedArtist = expFindArtistByName(primaryArtist);
+        return {
+          id: `spotify_${Date.now()}_${index}`,
+          title: track.title || "Unknown Title",
+          artists,
+          artistID: matchedArtist?.artistID || "",
+          artistName: matchedArtist?.artist || primaryArtist,
+          isNewArtist: !matchedArtist,
+          releaseDate: track.releaseDate || "",
+          duration: Math.round((track.durationMs || 0) / 1000),
+          spotifyUrl: track.spotifyUrl || "",
+          youtubeQuery: [track.title, artists.join(" ")].filter(Boolean).join(" "),
+          youtubeResults: [],
+          selectedVideo: null,
+          skipped: false,
+          status: "queued",
+          songID: "",
+          albumID: "",
+        };
+      }
+
+      function renderSpotifyImportSection() {
+        const workspace = document.getElementById("experimental-workspace");
+        if (!workspace) return;
+        workspace.style.alignItems = "stretch";
+        workspace.style.justifyContent = "stretch";
+        workspace.style.color = "";
+        workspace.style.overflow = "hidden";
+        workspace.innerHTML = `
+          <div class="exp-import-shell">
+            <div class="exp-external-import-panel">
+              <div style="min-width:0;">
+                <div class="exp-external-import-title">
+                  <label>Exportify Auto Import</label>
+                  <span id="exp-exportify-watch-pill"></span>
+                </div>
+                <div class="exp-external-import-help">Opens Exportify, watches Downloads for the exported CSV, then builds the YouTube review queue automatically.</div>
+              </div>
+              <div class="exp-external-import-actions">
+                <button id="exp-exportify-auto-btn" class="btn-primary" style="margin:0;" onclick="expStartExternalPlaylistWatch()">Exportify + Auto Import</button>
+                <button id="exp-playlist-cancel-btn" class="btn-secondary" style="margin:0;" onclick="expCancelSpotifyImportWork()">Cancel</button>
+                <button id="exp-spotify-download-btn" class="btn-primary" style="margin:0;" onclick="expDownloadSpotifyImport()" disabled>Download All</button>
+              </div>
+            </div>
+            <div id="exp-spotify-import-summary" class="exp-import-summary"></div>
+            <div id="exp-spotify-import-list" class="exp-import-list"></div>
+          </div>
+        `;
+        renderSpotifyImportRows();
+      }
+
+      function renderSpotifyImportRows() {
+        const list = document.getElementById("exp-spotify-import-list");
+        const summary = document.getElementById("exp-spotify-import-summary");
+        const downloadBtn = document.getElementById("exp-spotify-download-btn");
+        const cancelBtn = document.getElementById("exp-playlist-cancel-btn");
+        const autoBtn = document.getElementById("exp-exportify-auto-btn");
+        const watchPill = document.getElementById("exp-exportify-watch-pill");
+        if (!list || !summary) return;
+
+        const rows = spotifyImportState.tracks;
+        const activeRows = rows.filter((row) => !row.skipped);
+        const activeDownloadRows = activeRows.filter(
+          (row) => row.status !== "sent" && row.status !== "downloading",
+        );
+        const selectedCount = activeRows.filter((row) => row.selectedVideo).length;
+        const downloadableCount = activeDownloadRows.filter((row) => row.selectedVideo).length;
+        const newArtistCount = activeRows.filter((row) => row.isNewArtist).length;
+        const unresolvedCount = activeDownloadRows.filter((row) => !row.selectedVideo).length;
+        const sentCount = activeRows.filter((row) => row.status === "sent" || row.status === "downloading").length;
+        const isWatching = Boolean(externalPlaylistImportWatch.timer);
+        const isBusy = isWatching || spotifyImportState.searching || spotifyImportState.downloading;
+        const canDownload =
+          rows.length > 0 &&
+          activeDownloadRows.length > 0 &&
+          downloadableCount > 0 &&
+          unresolvedCount === 0 &&
+          !spotifyImportState.searching &&
+          !spotifyImportState.downloading;
+        let summaryText = rows.length
+          ? `${rows.length} tracks loaded. ${selectedCount}/${activeRows.length} ready. ${newArtistCount} new artist folders.`
+          : "No playlist loaded.";
+        if (isWatching) summaryText = "Waiting for the Exportify CSV in Downloads...";
+        else if (spotifyImportState.searching) {
+          summaryText = spotifyImportState.cancelRequested
+            ? "Cancelling playlist search..."
+            : `Matching YouTube results... ${selectedCount}/${activeRows.length} ready.`;
+        } else if (spotifyImportState.downloading) {
+          summaryText = spotifyImportState.downloadCancelRequested
+            ? "Cancelling remaining downloads..."
+            : `Starting downloads... ${sentCount}/${activeRows.length} sent.`;
+        } else if (rows.length && unresolvedCount) {
+          summaryText = `${unresolvedCount} track${unresolvedCount === 1 ? "" : "s"} still need a selected YouTube result or a skip.`;
+        } else if (canDownload) {
+          summaryText = "Review complete. Download is ready.";
+        } else if (rows.length && sentCount) {
+          summaryText = `${sentCount} playlist download${sentCount === 1 ? "" : "s"} started.`;
+        }
+
+        summary.innerHTML = `
+          ${isBusy ? `<span class="exp-import-spinner"></span>` : ""}
+          <span>${escapeHtml(summaryText)}</span>
+          ${isBusy ? `<div class="exp-import-progress" style="width:100%;"></div>` : ""}
+        `;
+        if (downloadBtn) {
+          downloadBtn.disabled = !canDownload;
+          downloadBtn.textContent = spotifyImportState.downloading
+            ? "Downloading..."
+            : canDownload
+              ? `Download ${downloadableCount}`
+              : "Download All";
+          downloadBtn.style.opacity = downloadBtn.disabled ? "0.45" : "1";
+        }
+        if (cancelBtn) {
+          cancelBtn.disabled = !isBusy;
+          cancelBtn.style.opacity = cancelBtn.disabled ? "0.45" : "1";
+        }
+        if (autoBtn) {
+          autoBtn.disabled = isBusy;
+          autoBtn.textContent = isWatching ? "Watching Downloads..." : "Exportify + Auto Import";
+          autoBtn.style.opacity = autoBtn.disabled ? "0.55" : "1";
+        }
+        if (watchPill) {
+          watchPill.innerHTML = isWatching
+            ? `<span class="exp-import-status" style="color:var(--text-muted); font-size:12px; text-transform:none;"><span class="exp-import-spinner"></span>Watching</span>`
+            : "";
+        }
+
+        if (!rows.length) {
+          list.innerHTML = `<div style="color:var(--text-muted); font-size:13px; padding:14px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-elevated);">Click Exportify + Auto Import, export the playlist CSV in your browser, and NewMusic will build the review queue here.</div>`;
+          return;
+        }
+
+        list.innerHTML = rows
+          .map((row, index) => renderSpotifyImportRow(row, index))
+          .join("");
+      }
+
+      function renderSpotifyImportRow(row, index) {
+        const video = row.selectedVideo;
+        const thumb = video?.thumbnail || "./logo.png";
+        const rowSearching = row.status === "searching";
+        const controlsDisabled = spotifyImportState.searching || spotifyImportState.downloading || rowSearching;
+        const disabledAttr = controlsDisabled ? "disabled" : "";
+        const choicesDisabled = controlsDisabled || !row.youtubeResults.length ? "disabled" : "";
+        const videoMeta = video
+          ? [video.channel, video.duration, expFormatViews(video.view_count)]
+              .filter(Boolean)
+              .join(" | ")
+          : rowSearching
+            ? "Searching YouTube Music..."
+            : "No YouTube result selected";
+        const resultTitle = video?.title || row.status;
+        const artistSelectValue = row.isNewArtist ? "__new__" : row.artistID;
+        const artistOptions = [
+          `<option value="__new__" ${row.isNewArtist ? "selected" : ""}>New artist folder</option>`,
+          ...artistsDatabase.map(
+            (artist) =>
+              `<option value="${escapeAttr(artist.artistID)}" ${artist.artistID === artistSelectValue ? "selected" : ""}>${escapeHtml(artist.artist)}</option>`,
+          ),
+        ].join("");
+        const folderLabel = row.isNewArtist
+          ? `./assets/${makeSlug(row.artistName || "unknown_artist")}/`
+          : `./assets/${getArtistSlugById(row.artistID)}/`;
+        const candidatesVisible = spotifyImportState.activeRowId === row.id && row.youtubeResults.length;
+
+        return `
+          <div class="exp-import-row ${row.skipped ? "skipped" : ""} ${rowSearching ? "searching" : ""}">
+            <div class="exp-import-index">${index + 1}</div>
+            <img class="exp-import-thumb" src="${escapeAttr(thumb)}" onerror="this.src='./logo.png'">
+            <div class="exp-import-fields">
+              <div class="exp-import-full">
+                <label>Song Title</label>
+                <input class="ctrl-input" type="text" value="${escapeAttr(row.title)}" oninput="expSetSpotifyRowTitle('${escapeAttr(row.id)}', this.value)" style="margin:0;" ${spotifyImportState.downloading ? "disabled" : ""}>
+              </div>
+              <div>
+                <label>Artist Folder</label>
+                <select class="ctrl-select" onchange="expSetSpotifyRowArtist('${escapeAttr(row.id)}', this.value)" ${spotifyImportState.downloading ? "disabled" : ""}>${artistOptions}</select>
+              </div>
+              <div>
+                <label>${row.isNewArtist ? "New Artist" : "Folder"}</label>
+                ${
+                  row.isNewArtist
+                    ? `<input class="ctrl-input" type="text" value="${escapeAttr(row.artistName)}" oninput="expSetSpotifyRowNewArtist('${escapeAttr(row.id)}', this.value)" style="margin:0;" ${spotifyImportState.downloading ? "disabled" : ""}>`
+                    : `<input class="ctrl-input" type="text" value="${escapeAttr(folderLabel)}" disabled style="margin:0; opacity:0.75;">`
+                }
+              </div>
+              <div class="exp-import-full exp-import-folder-note">${escapeHtml(folderLabel)}</div>
+              <label class="exp-import-full" style="display:flex; align-items:center; gap:8px; color:var(--text-muted); text-transform:none; letter-spacing:0; font-size:12px;">
+                <input type="checkbox" ${row.skipped ? "checked" : ""} onchange="expToggleSpotifyRowSkipped('${escapeAttr(row.id)}', this.checked)" ${spotifyImportState.downloading ? "disabled" : ""}>
+                Skip this track
+              </label>
+            </div>
+            <div class="exp-import-fields">
+              <div class="exp-import-full">
+                <label>YouTube Music Search</label>
+                <input class="ctrl-input" type="text" value="${escapeAttr(row.youtubeQuery)}" oninput="expSetSpotifyRowQuery('${escapeAttr(row.id)}', this.value)" onkeydown="if(event.key === 'Enter') expSearchSpotifyImportRow('${escapeAttr(row.id)}')" style="margin:0;" ${disabledAttr}>
+              </div>
+              <div class="exp-import-full">
+                <div class="exp-import-status">
+                  ${rowSearching ? `<span class="exp-import-spinner"></span>` : ""}
+                  <div class="exp-item-title exp-import-status-text">${escapeHtml(resultTitle)}</div>
+                </div>
+                <div class="exp-item-meta">${escapeHtml(videoMeta)}</div>
+              </div>
+              <div class="exp-import-actions exp-import-full">
+                <button class="btn-secondary" style="margin:0;" onclick="expSearchSpotifyImportRow('${escapeAttr(row.id)}')" ${disabledAttr}>Search Again</button>
+                <button class="btn-secondary" style="margin:0;" onclick="expShowSpotifyImportChoices('${escapeAttr(row.id)}')" ${choicesDisabled}>Choices</button>
+              </div>
+            </div>
+            ${
+              candidatesVisible
+                ? `<div class="exp-import-candidates">
+                    ${row.youtubeResults
+                      .slice(0, 5)
+                      .map((candidate, candidateIndex) => {
+                        const selected =
+                          row.selectedVideo?.url && row.selectedVideo.url === candidate.url;
+                        return `
+                          <div class="exp-import-candidate ${selected ? "selected" : ""}" onclick="expChooseSpotifyImportVideo('${escapeAttr(row.id)}', ${candidateIndex})">
+                            <img class="exp-youtube-thumb" src="${escapeAttr(candidate.thumbnail || "./logo.png")}" onerror="this.src='./logo.png'">
+                            <div style="min-width:0;">
+                              <div class="exp-item-title">${escapeHtml(candidate.title)}</div>
+                              <div class="exp-item-meta">${escapeHtml([candidate.channel, candidate.duration, expFormatViews(candidate.view_count)].filter(Boolean).join(" | "))}</div>
+                            </div>
+                          </div>`;
+                      })
+                      .join("")}
+                  </div>`
+                : ""
+            }
+          </div>`;
+      }
+
+      function expGetExternalPlaylistExports(sinceMs = 0) {
+        const downloadsDir = path.join(os.homedir(), "Downloads");
+        return fs
+          .readdirSync(downloadsDir)
+          .map((name) => {
+            const abs = path.join(downloadsDir, name);
+            const stat = fs.statSync(abs);
+            return { name, abs, stat };
+          })
+          .filter(
+            (entry) =>
+              entry.stat.isFile() &&
+              entry.stat.mtimeMs >= sinceMs &&
+              /\.(csv|txt|tsv)$/i.test(entry.name),
+          )
+          .sort((a, b) => b.stat.mtimeMs - a.stat.mtimeMs);
+      }
+
+      function expStopExternalPlaylistWatch(updateUi = false) {
+        if (externalPlaylistImportWatch.timer) {
+          clearInterval(externalPlaylistImportWatch.timer);
+          externalPlaylistImportWatch.timer = null;
+        }
+        if (updateUi) renderSpotifyImportRows();
+      }
+
+      async function expImportExternalPlaylistFilePath(filePath, fileName = "") {
+        const text = fs.readFileSync(filePath, "utf8");
+        await expBuildExternalPlaylistQueueFromText(text);
+        expSetStatus(`Loaded playlist export${fileName ? `: ${fileName}` : ""}`);
+      }
+
+      window.expStartExternalPlaylistWatch = function () {
+        expStopExternalPlaylistWatch();
+        externalPlaylistImportWatch.startedAt = Date.now() - 2000;
+        spotifyImportState.cancelRequested = false;
+        shell.openExternal("https://exportify.app/");
+        expSetStatus("Waiting for a new Exportify CSV in Downloads...");
+        const timeoutAt = Date.now() + 10 * 60 * 1000;
+        externalPlaylistImportWatch.timer = setInterval(async () => {
+          if (Date.now() > timeoutAt) {
+            expStopExternalPlaylistWatch(true);
+            expSetStatus("Stopped watching Downloads. No new Exportify CSV appeared.");
+            return;
+          }
+          let files = [];
+          try {
+            files = expGetExternalPlaylistExports(externalPlaylistImportWatch.startedAt);
+          } catch (err) {
+            expStopExternalPlaylistWatch(true);
+            alert("Could not watch your Downloads folder: " + err.message);
+            return;
+          }
+          if (!files.length) return;
+          expStopExternalPlaylistWatch(true);
+          try {
+            await expImportExternalPlaylistFilePath(files[0].abs, files[0].name);
+          } catch (err) {
+            alert("Could not auto-import the downloaded playlist export: " + err.message);
+          }
+        }, 2000);
+        renderSpotifyImportRows();
+      };
+
+      window.expCancelSpotifyImportWork = function () {
+        let cancelled = false;
+        if (externalPlaylistImportWatch.timer) {
+          expStopExternalPlaylistWatch();
+          expSetStatus("Exportify auto import cancelled.");
+          cancelled = true;
+        }
+        if (spotifyImportState.searching) {
+          spotifyImportState.cancelRequested = true;
+          spotifyImportState.searchRunId += 1;
+          spotifyImportState.searching = false;
+          spotifyImportState.tracks.forEach((row) => {
+            if (row.status === "queued" || row.status === "searching") {
+              row.status = "cancelled";
+            }
+          });
+          expSetStatus("Playlist search cancelled.");
+          cancelled = true;
+        }
+        if (spotifyImportState.downloading) {
+          spotifyImportState.downloadCancelRequested = true;
+          expSetStatus("Cancelling remaining playlist downloads...");
+          cancelled = true;
+        }
+        if (cancelled) renderSpotifyImportRows();
+      };
+
+      async function expBuildExternalPlaylistQueueFromText(raw) {
+        const tracks = expParseExternalPlaylistText(raw);
+        if (!tracks.length) {
+          return alert("I could not find any title/artist rows in that Exportify CSV.");
+        }
+        spotifyImportState.tracks = tracks.map(expBuildSpotifyImportRow);
+        spotifyImportState.activeRowId = null;
+        spotifyImportState.cancelRequested = false;
+        spotifyImportState.downloadCancelRequested = false;
+        spotifyImportState.searching = true;
+        renderSpotifyImportRows();
+        await expAutoMatchSpotifyImportRows();
+      }
+
+      function expParseExternalPlaylistText(raw) {
+        const text = String(raw || "").trim();
+        if (!text) return [];
+        const csvRows = expParseDelimitedRows(text);
+        const headerTracks = expTracksFromDelimitedRows(csvRows);
+        if (headerTracks.length) return headerTracks;
+        return text
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map(expParsePlainTrackLine)
+          .filter((track) => track && track.title && track.artists.length);
+      }
+
+      function expParseDelimitedRows(text) {
+        const rows = [];
+        let row = [];
+        let value = "";
+        let inQuotes = false;
+        for (let index = 0; index < text.length; index++) {
+          const char = text[index];
+          const next = text[index + 1];
+          if (char === '"') {
+            if (inQuotes && next === '"') {
+              value += '"';
+              index++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (!inQuotes && (char === "," || char === "\t" || char === ";")) {
+            row.push(value);
+            value = "";
+          } else if (!inQuotes && (char === "\n" || char === "\r")) {
+            if (char === "\r" && next === "\n") index++;
+            row.push(value);
+            rows.push(row);
+            row = [];
+            value = "";
+          } else {
+            value += char;
+          }
+        }
+        row.push(value);
+        rows.push(row);
+        return rows
+          .map((entry) => entry.map((cell) => cell.trim()))
+          .filter((entry) => entry.some(Boolean));
+      }
+
+      function expNormalizeHeader(value) {
+        return String(value || "")
+          .toLowerCase()
+          .replace(/\([^)]*\)/g, "")
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
+      }
+
+      function expFindHeaderIndex(headers, matchers) {
+        return headers.findIndex((header) =>
+          matchers.some((matcher) => matcher(header)),
+        );
+      }
+
+      function expTracksFromDelimitedRows(rows) {
+        if (!rows.length || rows[0].length < 2) return [];
+        const headers = rows[0].map(expNormalizeHeader);
+        const titleIndex = expFindHeaderIndex(headers, [
+          (header) => header === "track name",
+          (header) => header === "song title",
+          (header) => header === "title",
+          (header) => header === "name",
+        ]);
+        const artistIndex = expFindHeaderIndex(headers, [
+          (header) => header === "artist name",
+          (header) => header === "artist names",
+          (header) => header === "artists",
+          (header) => header === "artist",
+        ]);
+        if (titleIndex < 0 || artistIndex < 0) return [];
+        const durationIndex = expFindHeaderIndex(headers, [
+          (header) => header.includes("duration"),
+        ]);
+        const releaseIndex = expFindHeaderIndex(headers, [
+          (header) => header.includes("release date"),
+        ]);
+        return rows
+          .slice(1)
+          .map((row) => {
+            const title = row[titleIndex] || "";
+            const artistText = row[artistIndex] || "";
+            const durationValue = durationIndex >= 0 ? row[durationIndex] : "";
+            const durationMs = /^\d+$/.test(durationValue)
+              ? parseInt(durationValue, 10)
+              : parseDuration(durationValue) * 1000;
+            const artists = artistText
+              .split(/\s*[,;/]\s*|\s+\|\s+/)
+              .map((artist) => artist.trim())
+              .filter(Boolean);
+            return {
+              title,
+              artists,
+              durationMs: durationMs || 0,
+              releaseDate: releaseIndex >= 0 ? row[releaseIndex] || "" : "",
+              spotifyUrl: "",
+            };
+          })
+          .filter((track) => track.title && track.artists.length);
+      }
+
+      function expParsePlainTrackLine(line) {
+        const cleaned = String(line || "").replace(/^\d+[.)\-\s]+/, "").trim();
+        const byMatch = cleaned.match(/^(.+?)\s+\bby\b\s+(.+)$/i);
+        if (byMatch) {
+          return {
+            title: byMatch[1].trim(),
+            artists: [byMatch[2].trim()],
+            durationMs: 0,
+            releaseDate: "",
+            spotifyUrl: "",
+          };
+        }
+        const dashMatch = cleaned.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+        if (dashMatch) {
+          return {
+            artists: [dashMatch[1].trim()],
+            title: dashMatch[2].trim(),
+            durationMs: 0,
+            releaseDate: "",
+            spotifyUrl: "",
+          };
+        }
+        return null;
+      }
+
+      async function expAutoMatchSpotifyImportRows() {
+        const runId = spotifyImportState.searchRunId + 1;
+        spotifyImportState.searchRunId = runId;
+        spotifyImportState.cancelRequested = false;
+        spotifyImportState.searching = true;
+        renderSpotifyImportRows();
+        for (const row of spotifyImportState.tracks) {
+          if (spotifyImportState.cancelRequested || runId !== spotifyImportState.searchRunId) break;
+          if (row.skipped) continue;
+          await expSearchSpotifyImportRow(row.id, true, runId);
+        }
+        if (runId !== spotifyImportState.searchRunId) {
+          renderSpotifyImportRows();
+          return;
+        }
+        spotifyImportState.searching = false;
+        expSetStatus(
+          spotifyImportState.cancelRequested
+            ? "Playlist import search cancelled."
+            : "Playlist import review is ready.",
+        );
+        renderSpotifyImportRows();
+      }
+
+      window.expSearchSpotifyImportRow = async function (rowId, autoSelect = true, runId = 0) {
+        const row = expGetSpotifyImportRow(rowId);
+        if (!row) return;
+        const input = document.querySelector(`input[oninput*="${rowId}"][oninput*="expSetSpotifyRowQuery"]`);
+        if (input) row.youtubeQuery = input.value.trim();
+        if (!row.youtubeQuery) return alert("Enter a YouTube Music search query first.");
+        row.status = "searching";
+        spotifyImportState.activeRowId = row.id;
+        renderSpotifyImportRows();
+
+        let response;
+        try {
+          response = await ipcRenderer.invoke("youtube-search-one", {
+            query: row.youtubeQuery,
+            limit: 10,
+          });
+        } catch (err) {
+          response = { error: err.message || "Search failed." };
+        }
+        if (runId && runId !== spotifyImportState.searchRunId) {
+          row.status = "cancelled";
+          renderSpotifyImportRows();
+          return;
+        }
+        if (response.error) {
+          row.status = "search failed";
+          row.youtubeResults = [];
+          renderSpotifyImportRows();
+          return;
+        }
+        row.youtubeResults = response.results || [];
+        if (autoSelect && row.youtubeResults.length) {
+          row.selectedVideo = row.youtubeResults[0];
+          row.status = "matched";
+        } else if (row.youtubeResults.length) {
+          row.status = "choose a result";
+        } else {
+          row.selectedVideo = null;
+          row.status = "no results";
+        }
+        renderSpotifyImportRows();
+      };
+
+      window.expShowSpotifyImportChoices = function (rowId) {
+        spotifyImportState.activeRowId =
+          spotifyImportState.activeRowId === rowId ? null : rowId;
+        renderSpotifyImportRows();
+      };
+
+      window.expChooseSpotifyImportVideo = function (rowId, index) {
+        const row = expGetSpotifyImportRow(rowId);
+        if (!row || !row.youtubeResults[index]) return;
+        row.selectedVideo = row.youtubeResults[index];
+        row.status = "matched";
+        renderSpotifyImportRows();
+      };
+
+      window.expSetSpotifyRowTitle = function (rowId, value) {
+        const row = expGetSpotifyImportRow(rowId);
+        if (row) row.title = value;
+      };
+
+      window.expSetSpotifyRowQuery = function (rowId, value) {
+        const row = expGetSpotifyImportRow(rowId);
+        if (row) row.youtubeQuery = value;
+      };
+
+      window.expSetSpotifyRowArtist = function (rowId, value) {
+        const row = expGetSpotifyImportRow(rowId);
+        if (!row) return;
+        if (value === "__new__") {
+          row.isNewArtist = true;
+          row.artistID = "";
+          row.artistName = row.artistName || row.artists[0] || "Unknown Artist";
+        } else {
+          const artist = getArtistById(value);
+          row.isNewArtist = false;
+          row.artistID = value;
+          row.artistName = artist?.artist || row.artistName;
+        }
+        renderSpotifyImportRows();
+      };
+
+      window.expSetSpotifyRowNewArtist = function (rowId, value) {
+        const row = expGetSpotifyImportRow(rowId);
+        if (row) row.artistName = value;
+        const folderNode = document.querySelector(`#exp-spotify-import-list .exp-import-row:nth-child(${spotifyImportState.tracks.findIndex((entry) => entry.id === rowId) + 1}) .exp-import-folder-note`);
+        if (folderNode && row) folderNode.textContent = `./assets/${makeSlug(row.artistName || "unknown_artist")}/`;
+      };
+
+      window.expToggleSpotifyRowSkipped = function (rowId, checked) {
+        const row = expGetSpotifyImportRow(rowId);
+        if (!row) return;
+        row.skipped = checked;
+        renderSpotifyImportRows();
+      };
+
+      function expEnsureArtistForImport(row) {
+        const existing = row.isNewArtist
+          ? expFindArtistByName(row.artistName)
+          : getArtistById(row.artistID);
+        if (existing) {
+          row.artistID = existing.artistID;
+          row.artistName = existing.artist;
+          row.isNewArtist = false;
+          return { artist: existing, created: false };
+        }
+
+        const artistName = String(row.artistName || row.artists[0] || "Unknown Artist").trim();
+        if (!artistName) throw new Error(`Missing artist for ${row.title}`);
+        const slug = expUniqueSlug(
+          artistName,
+          new Set(artistsDatabase.map((artist) => artist.artistID)),
+          "art_",
+        );
+        const artist = {
+          artistID: `art_${slug}`,
+          artist: artistName,
+          firstlistenYear: String(new Date().getFullYear()),
+          country: "Unknown",
+          genre: [],
+          tags: [],
+          members: [],
+          paths: {
+            cover: `./assets/${slug}/profile.png`,
+          },
+        };
+        expEnsureArtistFolders(slug);
+        artistsDatabase.unshift(artist);
+        row.artistID = artist.artistID;
+        row.artistName = artist.artist;
+        row.isNewArtist = false;
+        return { artist, created: true };
+      }
+
+      function expCreateSingleAlbumForImport(row, artist) {
+        const artistSlug = getArtistSlugFromArtist(artist);
+        expEnsureArtistFolders(artistSlug);
+        const title = formatTitleCase(row.title || "Unknown Title");
+        const albumSlug = expUniqueSlug(
+          `${title}_single`,
+          new Set(albumsDatabase.map((album) => album.albumID)),
+          `alb_${artistSlug}_`,
+        );
+        return {
+          albumID: `alb_${artistSlug}_${albumSlug}`,
+          title,
+          artistID: artist.artistID,
+          releaseDate: row.releaseDate || "",
+          firstlistenDate: expTodayIso(),
+          albumType: "single",
+          genre: [],
+          tags: [],
+          paths: {
+            cover: `./assets/${artistSlug}/albums/${albumSlug}.png`,
+          },
+        };
+      }
+
+      function expSleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      window.expDownloadSpotifyImport = async function () {
+        if (spotifyImportState.downloading) return;
+        if (spotifyImportState.searching) return alert("Wait for the YouTube matching to finish first.");
+        const unresolved = spotifyImportState.tracks.find((row) => !row.skipped && !row.selectedVideo);
+        if (unresolved) return alert(`Select or skip "${unresolved.title}" before downloading.`);
+        const rows = spotifyImportState.tracks.filter(
+          (row) =>
+            !row.skipped &&
+            row.selectedVideo &&
+            row.status !== "sent" &&
+            row.status !== "downloading",
+        );
+        if (!rows.length) return alert("No selected tracks are ready to download.");
+
+        const missingArtist = rows.find(
+          (row) => row.isNewArtist && !String(row.artistName || "").trim(),
+        );
+        if (missingArtist) return alert(`Missing artist name for "${missingArtist.title}".`);
+
+        spotifyImportState.downloading = true;
+        spotifyImportState.downloadCancelRequested = false;
+        let added = 0;
+        try {
+          for (const row of rows) {
+            if (spotifyImportState.downloadCancelRequested) {
+              row.status = "cancelled";
+              break;
+            }
+            const { artist, created } = expEnsureArtistForImport(row);
+            const album = expCreateSingleAlbumForImport(row, artist);
+            albumsDatabase.unshift(album);
+            const duration =
+              row.selectedVideo.duration_seconds ||
+              parseDuration(row.selectedVideo.duration || "") ||
+              row.duration ||
+              0;
+            const song = expCreateSongObject(
+              album.albumID,
+              formatTitleCase(row.title),
+              duration,
+            );
+            songsDatabase.unshift(song);
+            row.songID = song.songID;
+            row.albumID = album.albumID;
+            row.status = "sent";
+            added++;
+            expPendingDownloadNormalizations.set(song.songID, {
+              audioRel: song.paths.audio,
+              attempts: 0,
+            });
+            ipcRenderer.send("download-experimental-song", {
+              youtubeUrl: row.selectedVideo.url,
+              title: song.title,
+              audioPath: song.paths.audio,
+              lyricsPath: song.paths.lyrics,
+              coverPath: album.paths.cover,
+              profilePath: created ? artist.paths.cover : null,
+            });
+            renderSpotifyImportRows();
+            await expSleep(250);
+          }
+          if (added) {
+            expSaveDatabases(
+              `${added} singles added. Downloads started and will auto-normalize as WAV files finish.`,
+            );
+          } else {
+            expSetStatus("Playlist download cancelled before any songs were added.");
+          }
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          spotifyImportState.downloading = false;
+          spotifyImportState.downloadCancelRequested = false;
+          renderSpotifyImportRows();
+        }
+      };
+
+      function renderArtistEditor(artist, editor) {
+        const artistAlbums = albumsDatabase
+          .filter((album) => album.artistID === artist.artistID)
+          .sort((a, b) =>
+            String(b.releaseDate || "").localeCompare(
+              String(a.releaseDate || ""),
+            ),
+          );
+        const artistSongs = songsDatabase
+          .filter((song) => song.artistID === artist.artistID)
+          .sort((a, b) => {
+            const albumA = getAlbumById(a.albumID);
+            const albumB = getAlbumById(b.albumID);
+            const albumCompare = String(albumA?.title || "").localeCompare(
+              String(albumB?.title || ""),
+            );
+            if (albumCompare !== 0) return albumCompare;
+            return (a.track || 0) - (b.track || 0);
+          });
+
+        editor.innerHTML = `
+          ${renderImageBlock("artists", artist, artist.artistID, "Profile Picture")}
+          <div class="exp-editor-grid">
+            ${expField("exp-artistID", "Artist ID", artist.artistID)}
+            ${expField("exp-artist", "Artist Name", artist.artist)}
+            ${expField("exp-startYear", "Start Year", artist.startYear || "")}
+            ${expField("exp-firstlistenYear", "First Listen Year", artist.firstlistenYear || "")}
+            ${expField("exp-country", "Country", artist.country || "")}
+            ${expField("exp-genre", "Genres", arrayToCsv(artist.genre), "exp-editor-full")}
+            ${expField("exp-tags", "Tags", arrayToCsv(artist.tags), "exp-editor-full")}
+            ${expField("exp-members", "Members", arrayToCsv(artist.members), "exp-editor-full")}
+            ${expField("exp-cover", "Cover Path", artist.paths?.cover || "", "exp-editor-full")}
+          </div>
+          <div class="exp-editor-actions" style="margin-top:18px;">
+            <button class="btn-primary" onclick="expSaveCurrent()">Save Artist</button>
+            <button class="btn-danger" onclick="expDeleteCurrent()">Delete Artist</button>
+          </div>
+          <div class="exp-related-grid">
+            <div class="exp-related-panel">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 12px;">
+                <h3 style="font-size:13px; color:var(--text-muted); text-transform:uppercase; margin:0;">Albums / EPs / Singles</h3>
+                <button class="btn-secondary" style="margin:0; padding:7px 12px; font-size:12px;" onclick="expCreateAlbumForArtist('${escapeAttr(artist.artistID)}')">+ New Album</button>
+              </div>
+              <div class="exp-related-list">
+                ${
+                  artistAlbums.length
+                    ? artistAlbums
+                        .map(
+                          (album) => `
+                  <div class="exp-related-card" onclick="expOpenAlbumFromArtist('${escapeAttr(album.albumID)}')">
+                    <img class="exp-related-thumb" src="${escapeAttr(album.paths?.cover || "./logo.png")}?v=${Date.now()}" onerror="this.src='./logo.png'">
+                    <div style="min-width:0;">
+                      <div class="exp-item-title">${escapeHtml(album.title)}</div>
+                      <div class="exp-item-meta">${escapeHtml([album.releaseDate, album.albumType].filter(Boolean).join(" | "))}</div>
+                    </div>
+                  </div>`,
+                        )
+                        .join("")
+                    : `<div style="color:var(--text-muted); font-size:13px;">No releases for this artist yet.</div>`
+                }
+              </div>
+            </div>
+            <div class="exp-related-panel">
+              <h3 style="font-size:13px; color:var(--text-muted); text-transform:uppercase; margin:0 0 12px;">Songs</h3>
+              <div class="exp-related-list">
+                ${
+                  artistSongs.length
+                    ? artistSongs
+                        .map((song) => {
+                          const album = getAlbumById(song.albumID);
+                          return `
+                    <div class="exp-related-card" onclick="expOpenSongFromAlbum('${escapeAttr(song.songID)}')">
+                      <img class="exp-related-thumb" src="${escapeAttr(album?.paths?.cover || "./logo.png")}?v=${Date.now()}" onerror="this.src='./logo.png'">
+                      <div style="min-width:0;">
+                        <div class="exp-item-title">${escapeHtml(song.title)}</div>
+                        <div class="exp-item-meta">${escapeHtml([album?.title, song.track ? `Track ${song.track}` : ""].filter(Boolean).join(" | "))}</div>
+                      </div>
+                    </div>`;
+                        })
+                        .join("")
+                    : `<div style="color:var(--text-muted); font-size:13px;">No songs for this artist yet.</div>`
+                }
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderAlbumEditor(album, editor) {
+        const artistOptions = artistsDatabase.map((artist) => ({
+          value: artist.artistID,
+          label: artist.artist,
+        }));
+        const albumTypeOptions = EXP_ALBUM_TYPE_OPTIONS.map((type) => ({
+          value: type.value,
+          label: type.label.replace(/s$/, ""),
+        }));
+        const albumSongs = songsDatabase
+          .filter((song) => song.albumID === album.albumID)
+          .sort((a, b) => (a.track || 0) - (b.track || 0));
+        editor.innerHTML = `
+          ${renderImageBlock("albums", album, album.albumID, "Album Cover")}
+          <div class="exp-editor-grid">
+            ${expField("exp-albumID", "Album ID", album.albumID)}
+            ${expField("exp-title", "Title", album.title)}
+            ${expSelectField("exp-artistID", "Artist", album.artistID, artistOptions)}
+            ${expField("exp-releaseDate", "Release Date", album.releaseDate || "")}
+            ${expField("exp-firstlistenDate", "First Listen Date", album.firstlistenDate || "")}
+            ${expSelectField("exp-albumType", "Album Type", String(album.albumType || "album").toLowerCase(), albumTypeOptions)}
+            ${expField("exp-genre", "Genres", arrayToCsv(album.genre), "exp-editor-full")}
+            ${expField("exp-tags", "Tags", arrayToCsv(album.tags), "exp-editor-full")}
+            ${expField("exp-cover", "Cover Path", album.paths?.cover || "", "exp-editor-full")}
+          </div>
+          <div class="exp-editor-actions" style="margin-top:18px;">
+            <button class="btn-primary" onclick="expSaveCurrent()">Save Album</button>
+            <button class="btn-secondary" onclick="expAddBlankSong('${escapeAttr(album.albumID)}')">Add Blank Song</button>
+            <button class="btn-danger" onclick="expDeleteCurrent()">Delete Album</button>
+          </div>
+          <div class="exp-album-tools">
+            <div class="exp-album-track-panel">
+              <h3 style="font-size:13px; color:var(--text-muted); text-transform:uppercase; margin:0 0 12px;">Track Order</h3>
+              <div id="exp-album-tracks" class="exp-compact-track-list">
+                ${
+                  albumSongs.length
+                    ? albumSongs
+                        .map(
+                          (song) => `
+                  <div class="exp-track-row" draggable="true" ondragstart="expTrackDragStart(event, '${escapeAttr(song.songID)}')" ondragover="expDragOver(event, this)" ondragleave="expDragLeave(this)" ondrop="expTrackDrop(event, '${escapeAttr(song.songID)}', this)" ondragend="expDragEnd()" onclick="expOpenSongFromAlbum('${escapeAttr(song.songID)}')">
+                    <div class="exp-drag-handle" title="Drag to reorder">☰</div>
+                    <div style="color:var(--text-muted); font-weight:800; text-align:right;">${song.track || ""}</div>
+                    <div style="min-width:0;">
+                      <div class="exp-item-title">${escapeHtml(song.title)}</div>
+                      <div class="exp-item-meta">${escapeHtml(song.songID)}</div>
+                    </div>
+                    <button class="btn-secondary" style="margin:0;" onclick="event.stopPropagation(); expOpenSongFromAlbum('${escapeAttr(song.songID)}')">Edit</button>
+                  </div>`,
+                        )
+                        .join("")
+                    : `<div style="color:var(--text-muted); font-size:13px;">No songs in this album yet.</div>`
+                }
+              </div>
+            </div>
+            <div class="exp-album-youtube-panel">
+              <h3 style="font-size:13px; color:var(--text-muted); text-transform:uppercase; margin:0 0 12px;">Download Song Into This Album</h3>
+              <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                <input id="exp-youtube-query" class="ctrl-input" placeholder="Search YouTube Music..." style="margin:0; flex:1;" onkeydown="if(event.key === 'Enter') expSearchYoutubeForAlbum('${escapeAttr(album.albumID)}')">
+                <button class="btn-primary" style="margin:0;" onclick="expSearchYoutubeForAlbum('${escapeAttr(album.albumID)}')">Search</button>
+              </div>
+              <input id="exp-download-title" class="ctrl-input" placeholder="Song title to save in this album..." style="margin:0 0 10px;">
+              <button class="btn-secondary" style="margin:0 0 12px;" onclick="expDownloadSelectedSong('${escapeAttr(album.albumID)}')">Download Selected as WAV</button>
+              <div id="exp-youtube-results" class="exp-youtube-results-list"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderSongEditor(song, editor) {
+        const artistOptions = artistsDatabase.map((artist) => ({
+          value: artist.artistID,
+          label: artist.artist,
+        }));
+        const albumOptions = albumsDatabase.map((album) => ({
+          value: album.albumID,
+          label: album.title,
+        }));
+        const songAlbum = getAlbumById(song.albumID);
+        const lyricsPath = song.paths?.lyrics
+          ? relToAbs(song.paths.lyrics)
+          : "";
+        let lyricsText = "";
+        if (lyricsPath && fs.existsSync(lyricsPath))
+          lyricsText = fs.readFileSync(lyricsPath, "utf8");
+        editor.innerHTML = `
+          <div class="exp-song-editor-layout">
+            <div class="exp-song-fields-panel">
+              <div class="exp-editor-grid">
+                ${expField("exp-songID", "Song ID", song.songID)}
+                ${expField("exp-title", "Title", song.title)}
+                ${expSelectField("exp-artistID", "Artist", song.artistID, artistOptions)}
+                ${expSelectField("exp-albumID", "Album", song.albumID, albumOptions)}
+                ${expField("exp-track", "Track", song.track || "")}
+                ${expField("exp-duration", "Duration Seconds", song.duration || 0)}
+                ${expField("exp-releaseDate", "Release Date", song.releaseDate || songAlbum?.releaseDate || "")}
+                ${expField("exp-genre", "Genres", arrayToCsv(song.genre), "exp-editor-full")}
+                ${expField("exp-tags", "Tags", arrayToCsv(song.tags), "exp-editor-full")}
+                ${expField("exp-audio", "Audio Path", song.paths?.audio || "", "exp-editor-full")}
+              </div>
+              <div class="exp-editor-actions" style="margin-top:18px;">
+                <button class="btn-primary" onclick="expSaveCurrent()">Save Song + Lyrics</button>
+                <button class="btn-secondary" onclick="expNormalizeCurrentSong()">Normalize to -10 LUFS</button>
+                <button class="btn-secondary" onclick="expReturnToSongAlbum()">Back to Album</button>
+                <button class="btn-danger" onclick="expDeleteCurrent()">Delete Song</button>
+              </div>
+            </div>
+            <div class="exp-lyrics-panel">
+              <h3 style="font-size:13px; color:var(--text-muted); text-transform:uppercase; margin:0 0 12px;">Lyrics Editor</h3>
+              <audio controls src="${escapeAttr(song.paths?.audio || "")}?v=${Date.now()}" style="width:100%; margin:0 0 12px;" onerror="this.style.opacity='0.45'"></audio>
+              <div style="display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:8px; align-items:end; margin-bottom:12px; padding:10px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-surface);">
+                <div>
+                  <label style="margin-top:0;">Shift all timestamps by seconds</label>
+                  <input id="exp-lrc-shift-seconds" class="ctrl-input" type="number" value="0.00" step="0.01" style="margin:0;">
+                </div>
+                <button class="btn-secondary" style="margin:0; padding:10px 14px;" onclick="expShiftLrcTimestamps(-1)">Subtract</button>
+                <button class="btn-secondary" style="margin:0; padding:10px 14px;" onclick="expShiftLrcTimestamps(1)">Add</button>
+              </div>
+              ${expField("exp-lyrics", "Lyrics Path", song.paths?.lyrics || "")}
+              <label>Lyrics (.lrc)</label>
+              <textarea id="exp-lyrics-text" class="ctrl-input" style="resize:vertical;">${escapeHtml(lyricsText)}</textarea>
+            </div>
+          </div>
+        `;
+      }
+
+      function expFormatLrcTime(totalCentiseconds) {
+        const safeTotal = Math.max(0, Math.round(totalCentiseconds));
+        const minutes = Math.floor(safeTotal / 6000);
+        const seconds = Math.floor((safeTotal % 6000) / 100);
+        const centiseconds = safeTotal % 100;
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
+      }
+
+      function expShiftLrcText(text, deltaSeconds) {
+        const deltaCentiseconds = Math.round((Number(deltaSeconds) || 0) * 100);
+        return String(text || "").replace(
+          /\[(\d{1,3}):(\d{1,2})(?::(\d{1,2}))?(?:\.(\d{1,3}))?\]/g,
+          (match, first, second, third, fraction = "0") => {
+            let hours = 0;
+            let minutes = parseInt(first, 10) || 0;
+            let seconds = parseInt(second, 10) || 0;
+            if (third !== undefined) {
+              hours = minutes;
+              minutes = seconds;
+              seconds = parseInt(third, 10) || 0;
+            }
+            const centiseconds = parseInt(String(fraction).padEnd(2, "0").slice(0, 2), 10) || 0;
+            const current = (((hours * 60 + minutes) * 60 + seconds) * 100) + centiseconds;
+            return `[${expFormatLrcTime(current + deltaCentiseconds)}]`;
+          },
+        );
+      }
+
+      window.expShiftLrcTimestamps = function (direction) {
+        const textarea = document.getElementById("exp-lyrics-text");
+        const input = document.getElementById("exp-lrc-shift-seconds");
+        if (!textarea || !input) return;
+        const amount = Math.abs(parseFloat(input.value) || 0);
+        if (!amount) return alert("Enter the number of seconds to add or subtract, like 0.25 or 1.00.");
+        textarea.value = expShiftLrcText(textarea.value, amount * direction);
+        expSetStatus(`Shifted lyrics timestamps by ${direction > 0 ? "+" : "-"}${amount.toFixed(2)}s. Save the song to write it to the .lrc file.`);
+      };
+
+      window.expReturnToSongAlbum = function () {
+        const song = songsDatabase.find((entry) => entry.songID === expState.selectedId);
+        const albumID = song?.albumID || expState.lastAlbumID;
+        if (!albumID) return;
+        expState.section = "albums";
+        expState.selectedId = albumID;
+        expState.lastAlbumID = albumID;
+        expState.search = "";
+        expState.youtubeResult = null;
+        renderExperimentalSection();
+      };
+
+      function expBuildAlbumForArtist(selectedArtist, title) {
+        const artistSlug = getArtistSlugFromArtist(selectedArtist);
+        expEnsureArtistFolders(artistSlug);
+        const slug = expUniqueSlug(
+          title,
+          new Set(albumsDatabase.map((album) => album.albumID)),
+          "alb_",
+        );
+        const coverRel = `./assets/${artistSlug}/albums/${slug}.png`;
+        const logoPath = path.join(__dirname, "logo.png");
+        if (fs.existsSync(logoPath) && !fs.existsSync(relToAbs(coverRel)))
+          fs.copyFileSync(logoPath, relToAbs(coverRel));
+        return {
+          albumID: `alb_${slug}`,
+          title,
+          artistID: selectedArtist.artistID,
+          releaseDate: "",
+          firstlistenDate: "",
+          albumType: "album",
+          genre: [],
+          tags: [],
+          paths: { cover: coverRel },
+        };
+      }
+
+      window.expCreateAlbumForArtist = async function (artistID) {
+        const selectedArtist =
+          artistsDatabase.find((artist) => artist.artistID === artistID) ||
+          artistsDatabase[0];
+        if (!selectedArtist) return alert("Create an artist first.");
+        const titleRaw = await expAskText(
+          `New album / EP / single title for ${selectedArtist.artist}?`,
+        );
+        if (!titleRaw) return;
+        const title = formatTitleCase(titleRaw);
+        const album = expBuildAlbumForArtist(selectedArtist, title);
+        albumsDatabase.unshift(album);
+        expState.section = "albums";
+        expState.selectedId = album.albumID;
+        expState.lastArtistID = selectedArtist.artistID;
+        expState.lastAlbumID = album.albumID;
+        expState.search = "";
+        expState.youtubeResult = null;
+        expSaveDatabases(`Created album "${title}".`);
+        renderExperimentalSection();
+      };
+
+      window.expCreateItem = async function () {
+        const section = expState.section;
+
+        if (section === "artists") {
+          const name = await expAskText("New artist name?");
+          if (!name) return;
+          const slug = expUniqueSlug(
+            name,
+            new Set(artistsDatabase.map((artist) => artist.artistID)),
+            "art_",
+          );
+          expEnsureArtistFolders(slug);
+          const artist = {
+            artistID: `art_${slug}`,
+            artist: name,
+            firstlistenYear: String(new Date().getFullYear()),
+            country: "",
+            genre: [],
+            tags: [],
+            members: [],
+            paths: { cover: `./assets/${slug}/profile.png` },
+          };
+          artistsDatabase.unshift(artist);
+          expState.selectedId = artist.artistID;
+          expState.search = "";
+        }
+
+        if (section === "albums") {
+          await expCreateAlbumForArtist(expState.lastArtistID);
+          return;
+        }
+
+        if (section === "songs") {
+          const titleRaw = await expAskText("New song title?");
+          if (!titleRaw) return;
+          const title = formatTitleCase(titleRaw);
+          const selectedAlbum =
+            albumsDatabase.find(
+              (album) => album.albumID === expState.lastAlbumID,
+            ) || albumsDatabase[0];
+          if (!selectedAlbum) return alert("Create an album first.");
+          const song = expCreateSongObject(selectedAlbum.albumID, title, 0);
+          songsDatabase.unshift(song);
+          expState.selectedId = song.songID;
+          expState.search = "";
+        }
+
+        expSaveDatabases("Created item.");
+        renderExperimentalSection();
+      };
+
+      window.expSaveCurrent = function () {
+        const section = expState.section;
+        const cfg = EXP_SECTIONS[section];
+        if (!cfg) return;
+        const item = cfg
+          .data()
+          .find((entry) => entry[cfg.idKey] === expState.selectedId);
+        if (!item) return;
+        const oldItem = JSON.parse(JSON.stringify(item));
+        let returnToAlbumIDAfterSave = null;
+
+        if (section === "artists") {
+          item.artistID = document.getElementById("exp-artistID").value.trim();
+          item.artist = document.getElementById("exp-artist").value.trim();
+          item.startYear = document
+            .getElementById("exp-startYear")
+            .value.trim();
+          item.firstlistenYear = document
+            .getElementById("exp-firstlistenYear")
+            .value.trim();
+          item.country = document.getElementById("exp-country").value.trim();
+          item.genre = csvToArray(document.getElementById("exp-genre").value);
+          item.tags = csvToArray(document.getElementById("exp-tags").value);
+          item.members = csvToArray(
+            document.getElementById("exp-members").value,
+            false,
+          );
+          item.paths = {
+            cover: normalizeRelPath(document.getElementById("exp-cover").value),
+          };
+          if (oldItem.artistID !== item.artistID) {
+            albumsDatabase.forEach((album) => {
+              if (album.artistID === oldItem.artistID)
+                album.artistID = item.artistID;
+            });
+            songsDatabase.forEach((song) => {
+              if (song.artistID === oldItem.artistID)
+                song.artistID = item.artistID;
+            });
+          }
+          expState.selectedId = item.artistID;
+        }
+
+        if (section === "albums") {
+          item.albumID = document.getElementById("exp-albumID").value.trim();
+          item.title = document.getElementById("exp-title").value.trim();
+          item.artistID = document.getElementById("exp-artistID").value;
+          const selectedSongAlbum = getAlbumById(item.albumID);
+          item.releaseDate =
+            document.getElementById("exp-releaseDate").value.trim() ||
+            selectedSongAlbum?.releaseDate ||
+            "";
+          item.firstlistenDate = document
+            .getElementById("exp-firstlistenDate")
+            .value.trim();
+          item.albumType = document
+            .getElementById("exp-albumType")
+            .value.trim();
+          item.genre = csvToArray(document.getElementById("exp-genre").value);
+          item.tags = csvToArray(document.getElementById("exp-tags").value);
+          item.paths = {
+            cover: normalizeRelPath(document.getElementById("exp-cover").value),
+          };
+          if (oldItem.albumID !== item.albumID) {
+            songsDatabase.forEach((song) => {
+              if (song.albumID === oldItem.albumID) song.albumID = item.albumID;
+            });
+          }
+          expState.selectedId = item.albumID;
+        }
+
+        if (section === "songs") {
+          item.songID = document.getElementById("exp-songID").value.trim();
+          item.title = document.getElementById("exp-title").value.trim();
+          item.artistID = document.getElementById("exp-artistID").value;
+          item.albumID = document.getElementById("exp-albumID").value;
+          item.track =
+            parseInt(document.getElementById("exp-track").value, 10) || 1;
+          item.duration =
+            parseInt(document.getElementById("exp-duration").value, 10) || 0;
+          item.releaseDate = document
+            .getElementById("exp-releaseDate")
+            .value.trim();
+          item.genre = csvToArray(document.getElementById("exp-genre").value);
+          item.tags = csvToArray(document.getElementById("exp-tags").value);
+          item.paths = {
+            audio: normalizeRelPath(document.getElementById("exp-audio").value),
+            lyrics: normalizeRelPath(
+              document.getElementById("exp-lyrics").value,
+            ),
+          };
+          expMaybeRenameSongFiles(item, oldItem);
+          expWriteLyrics(item);
+          expState.selectedId = item.songID;
+          returnToAlbumIDAfterSave = item.albumID;
+        }
+
+        expSaveDatabases("Saved changes.");
+        if (returnToAlbumIDAfterSave) {
+          expState.section = "albums";
+          expState.selectedId = returnToAlbumIDAfterSave;
+          expState.lastAlbumID = returnToAlbumIDAfterSave;
+          const returnAlbum = getAlbumById(returnToAlbumIDAfterSave);
+          if (returnAlbum?.artistID) expState.lastArtistID = returnAlbum.artistID;
+          expState.search = "";
+          expState.youtubeResult = null;
+        }
+        renderExperimentalSection();
+      };
+
+      window.expDeleteCurrent = async function () {
+        const section = expState.section;
+        const cfg = EXP_SECTIONS[section];
+        if (!cfg) return;
+        const item = cfg
+          .data()
+          .find((entry) => entry[cfg.idKey] === expState.selectedId);
+        if (!item) return;
+
+        let message = "";
+        let statusMessage = "Deleted item.";
+        if (section === "artists") {
+          const artistAlbums = albumsDatabase.filter(
+            (album) => album.artistID === item.artistID,
+          );
+          const albumIds = new Set(artistAlbums.map((album) => album.albumID));
+          const songCount = songsDatabase.filter(
+            (song) =>
+              song.artistID === item.artistID || albumIds.has(song.albumID),
+          ).length;
+          message = `Delete artist "${item.artist}"? This will also remove ${artistAlbums.length} album/EP/single entries and ${songCount} song entries from the databases.`;
+          statusMessage = `Deleted artist "${item.artist}".`;
+        } else if (section === "albums") {
+          const songCount = songsDatabase.filter(
+            (song) => song.albumID === item.albumID,
+          ).length;
+          message = `Delete album "${item.title}"? This will also remove ${songCount} song entr${songCount === 1 ? "y" : "ies"} from the database.`;
+          statusMessage = `Deleted album "${item.title}".`;
+        } else if (section === "songs") {
+          message = `Delete song "${item.title}" from the database?`;
+          statusMessage = `Deleted song "${item.title}".`;
+        }
+
+        const confirmName = section === "artists" ? item.artist : item.title;
+        const confirmed = await expAskConfirm(
+          message,
+          "Confirm delete",
+          confirmName,
+        );
+        if (!confirmed) return;
+
+        if (section === "artists") {
+          const deletedArtistID = item.artistID;
+          const deletedAlbumIds = new Set(
+            albumsDatabase
+              .filter((album) => album.artistID === deletedArtistID)
+              .map((album) => album.albumID),
+          );
+          for (let i = songsDatabase.length - 1; i >= 0; i--) {
+            if (
+              songsDatabase[i].artistID === deletedArtistID ||
+              deletedAlbumIds.has(songsDatabase[i].albumID)
+            )
+              songsDatabase.splice(i, 1);
+          }
+          for (let i = albumsDatabase.length - 1; i >= 0; i--) {
+            if (albumsDatabase[i].artistID === deletedArtistID)
+              albumsDatabase.splice(i, 1);
+          }
+          const index = artistsDatabase.findIndex(
+            (artist) => artist.artistID === deletedArtistID,
+          );
+          if (index >= 0) artistsDatabase.splice(index, 1);
+          expState.lastArtistID = artistsDatabase[0]?.artistID || null;
+        }
+
+        if (section === "albums") {
+          const deletedAlbumID = item.albumID;
+          for (let i = songsDatabase.length - 1; i >= 0; i--) {
+            if (songsDatabase[i].albumID === deletedAlbumID)
+              songsDatabase.splice(i, 1);
+          }
+          const index = albumsDatabase.findIndex(
+            (album) => album.albumID === deletedAlbumID,
+          );
+          if (index >= 0) albumsDatabase.splice(index, 1);
+          expState.lastAlbumID = albumsDatabase[0]?.albumID || null;
+        }
+
+        if (section === "songs") {
+          const deletedSongID = item.songID;
+          const index = songsDatabase.findIndex(
+            (song) => song.songID === deletedSongID,
+          );
+          if (index >= 0) songsDatabase.splice(index, 1);
+        }
+
+        const remaining = getFilteredExperimentalItems();
+        expState.selectedId =
+          remaining[0]?.[cfg.idKey] || cfg.data()[0]?.[cfg.idKey] || null;
+        expState.youtubeResult = null;
+        expSaveDatabases(statusMessage);
+        renderExperimentalSection();
+      };
+
+      function expMaybeRenameSongFiles(song, oldSong) {
+        if (!oldSong.title || oldSong.title === song.title) return;
+        const artistSlug = getArtistSlugById(song.artistID);
+        const newSlug = makeSlug(song.title);
+        const newSongId = `${artistSlug}_${newSlug}`;
+        const newAudio = `./assets/${artistSlug}/songs/${newSlug}.wav`;
+        const newLyrics = `./assets/${artistSlug}/lyrics/${newSlug}.lrc`;
+        expRenameFile(oldSong.paths?.audio, newAudio);
+        expRenameFile(oldSong.paths?.lyrics, newLyrics);
+        song.songID = newSongId;
+        song.paths.audio = newAudio;
+        song.paths.lyrics = newLyrics;
+      }
+
+      function expRenameFile(oldRel, newRel) {
+        if (!oldRel || !newRel || oldRel === newRel) return;
+        const oldAbs = relToAbs(oldRel);
+        const newAbs = relToAbs(newRel);
+        fs.mkdirSync(path.dirname(newAbs), { recursive: true });
+        if (fs.existsSync(oldAbs) && !fs.existsSync(newAbs))
+          fs.renameSync(oldAbs, newAbs);
+      }
+
+      function expWriteLyrics(song) {
+        const textArea = document.getElementById("exp-lyrics-text");
+        if (!textArea || !song.paths?.lyrics) return;
+        const lyricsAbs = relToAbs(song.paths.lyrics);
+        fs.mkdirSync(path.dirname(lyricsAbs), { recursive: true });
+        fs.writeFileSync(lyricsAbs, textArea.value, "utf8");
+      }
+
+      function expCleanDragClasses() {
+        document
+          .querySelectorAll(".exp-dragging, .exp-drag-over")
+          .forEach((node) => {
+            node.classList.remove("exp-dragging", "exp-drag-over");
+          });
+      }
+
+      window.expDragOver = function (event, node) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        document.querySelectorAll(".exp-drag-over").forEach((entry) => {
+          if (entry !== node) entry.classList.remove("exp-drag-over");
+        });
+        if (node) node.classList.add("exp-drag-over");
+      };
+
+      window.expDragLeave = function (node) {
+        if (node) node.classList.remove("exp-drag-over");
+      };
+
+      window.expDragEnd = function () {
+        expState.dragId = null;
+        expState.trackDragId = null;
+        expCleanDragClasses();
+      };
+
+      window.expStartDrag = function (event, id) {
+        expState.dragId = id;
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", id);
+        if (event.currentTarget)
+          event.currentTarget.classList.add("exp-dragging");
+      };
+
+      window.expDropItem = function (event, targetId, node) {
+        event.preventDefault();
+        const cfg = EXP_SECTIONS[expState.section];
+        if (!cfg || !expState.dragId || expState.dragId === targetId)
+          return expDragEnd();
+        const data = cfg.data();
+        const from = data.findIndex(
+          (item) => item[cfg.idKey] === expState.dragId,
+        );
+        const to = data.findIndex((item) => item[cfg.idKey] === targetId);
+        if (from < 0 || to < 0) return expDragEnd();
+        const [moved] = data.splice(from, 1);
+        data.splice(to, 0, moved);
+        expSaveDatabases("Order saved.");
+        expDragEnd();
+        renderExperimentalList();
+      };
+
+      window.expTrackDragStart = function (event, songID) {
+        expState.trackDragId = songID;
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", songID);
+        if (event.currentTarget)
+          event.currentTarget.classList.add("exp-dragging");
+      };
+
+      window.expTrackDrop = function (event, targetSongID, node) {
+        event.preventDefault();
+        if (!expState.trackDragId || expState.trackDragId === targetSongID)
+          return expDragEnd();
+        const albumID = expState.selectedId;
+        const tracks = songsDatabase
+          .filter((song) => song.albumID === albumID)
+          .sort((a, b) => (a.track || 0) - (b.track || 0));
+        const from = tracks.findIndex(
+          (song) => song.songID === expState.trackDragId,
+        );
+        const to = tracks.findIndex((song) => song.songID === targetSongID);
+        if (from < 0 || to < 0) return expDragEnd();
+        const [moved] = tracks.splice(from, 1);
+        tracks.splice(to, 0, moved);
+        tracks.forEach((song, index) => {
+          song.track = index + 1;
+        });
+        expSaveDatabases("Track order saved.");
+        expDragEnd();
+        renderExperimentalEditor();
+        renderExperimentalList();
+      };
+
+      window.expOpenAlbumFromArtist = function (albumID) {
+        const album = getAlbumById(albumID);
+        if (album?.artistID) expState.lastArtistID = album.artistID;
+        expState.section = "albums";
+        expState.selectedId = albumID;
+        expState.search = "";
+        expState.youtubeResult = null;
+        renderExperimentalSection();
+      };
+
+      window.expOpenSongFromAlbum = function (songID) {
+        const song = songsDatabase.find((entry) => entry.songID === songID);
+        if (song?.albumID) expState.lastAlbumID = song.albumID;
+        if (song?.artistID) expState.lastArtistID = song.artistID;
+        expState.section = "songs";
+        expState.selectedId = songID;
+        expState.search = "";
+        expState.youtubeResult = null;
+        renderExperimentalSection();
+      };
+
+      function expCreateSongObject(albumID, title, duration = 0) {
+        const album = getAlbumById(albumID);
+        const artist = getArtistById(album?.artistID);
+        const artistSlug = getArtistSlugFromArtist(artist);
+        expEnsureArtistFolders(artistSlug);
+        const slug = expUniqueSlug(
+          title,
+          new Set(songsDatabase.map((song) => song.songID)),
+          `${artistSlug}_`,
+        );
+        const track =
+          songsDatabase.filter((song) => song.albumID === albumID).length + 1;
+        const lyricsRel = `./assets/${artistSlug}/lyrics/${slug}.lrc`;
+        const lyricsAbs = relToAbs(lyricsRel);
+        if (!fs.existsSync(lyricsAbs)) fs.writeFileSync(lyricsAbs, "", "utf8");
+        return {
+          songID: `${artistSlug}_${slug}`,
+          title,
+          artistID: album.artistID,
+          albumID,
+          track,
+          duration,
+          releaseDate: album?.releaseDate || "",
+          genre: Array.isArray(album.genre) ? [...album.genre] : [],
+          tags: [],
+          paths: {
+            audio: `./assets/${artistSlug}/songs/${slug}.wav`,
+            lyrics: lyricsRel,
+          },
+        };
+      }
+
+      window.expAddBlankSong = async function (albumID) {
+        const titleRaw = await expAskText("Song title?");
+        if (!titleRaw) return;
+        const title = formatTitleCase(titleRaw);
+        const song = expCreateSongObject(albumID, title, 0);
+        songsDatabase.unshift(song);
+        expSaveDatabases("Blank song created.");
+        expOpenSongFromAlbum(song.songID);
+      };
+
+      window.expUploadImage = async function (section, id, input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const cfg = EXP_SECTIONS[section];
+        const item = cfg.data().find((entry) => entry[cfg.idKey] === id);
+        if (!item) return;
+        if (!item.paths) item.paths = {};
+        if (!item.paths.cover) {
+          if (section === "artists")
+            item.paths.cover = `./assets/${String(item.artistID).replace(/^art_/, "")}/profile.png`;
+          if (section === "albums")
+            item.paths.cover = `./assets/${getArtistSlugById(item.artistID)}/albums/${makeSlug(item.title)}.png`;
+        }
+        item.paths.cover = normalizeRelPath(item.paths.cover);
+        await expWriteSquarePng(file, item.paths.cover);
+        expSaveDatabases("Image saved.");
+        renderExperimentalSection();
+      };
+
+      function readFileDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function loadImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
+      }
+
+      async function expWriteSquarePng(file, relTarget) {
+        const dataUrl = await readFileDataUrl(file);
+        const img = await loadImage(dataUrl);
+        const canvas = document.createElement("canvas");
+        canvas.width = 1200;
+        canvas.height = 1200;
+        const ctx = canvas.getContext("2d");
+        const crop = Math.min(img.width, img.height);
+        const sx = (img.width - crop) / 2;
+        const sy = (img.height - crop) / 2;
+        ctx.drawImage(img, sx, sy, crop, crop, 0, 0, 1200, 1200);
+        const base64 = canvas
+          .toDataURL("image/png")
+          .replace(/^data:image\/png;base64,/, "");
+        const absTarget = relToAbs(relTarget);
+        fs.mkdirSync(path.dirname(absTarget), { recursive: true });
+        fs.writeFileSync(absTarget, Buffer.from(base64, "base64"));
+      }
+
+      window.expSearchYoutubeForAlbum = function (albumID) {
+        const input = document.getElementById("exp-youtube-query");
+        const results = document.getElementById("exp-youtube-results");
+        const query = input?.value.trim();
+        expState.youtubeResult = null;
+        if (!query) return alert("Enter a search term first.");
+        if (results)
+          results.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">Searching...</div>`;
+        ipcRenderer.send("search-youtube", query);
+      };
+
+      ipcRenderer.on("search-results", (event, response) => {
+        const results = document.getElementById("exp-youtube-results");
+        if (!results) return;
+        if (response.error) {
+          results.innerHTML = `<div style="color:#ff0050;">${escapeHtml(response.error)}</div>`;
+          return;
+        }
+        results.innerHTML = response.results
+          .slice(0, 10)
+          .map((video, index) => {
+            const views = video.view_count
+              ? `${Number(video.view_count).toLocaleString()} views`
+              : "views unknown";
+            return `
+            <div class="exp-youtube-result" onclick="expChooseYoutubeResult(${index})">
+              <img class="exp-youtube-thumb" src="${escapeAttr(video.thumbnail || "./logo.png")}" onerror="this.src='./logo.png'">
+              <div style="min-width:0;">
+                <div class="exp-item-title">${escapeHtml(video.title)}</div>
+                <div class="exp-item-meta">${escapeHtml([video.channel, video.duration, views].filter(Boolean).join(" | "))}</div>
+              </div>
+            </div>`;
+          })
+          .join("");
+        window.expLastYoutubeResults = response.results.slice(0, 10);
+      });
+
+      window.expChooseYoutubeResult = function (index) {
+        const video =
+          window.expLastYoutubeResults && window.expLastYoutubeResults[index];
+        if (!video) return;
+        expState.youtubeResult = video;
+        const titleInput = document.getElementById("exp-download-title");
+        if (titleInput && !titleInput.value.trim())
+          titleInput.value = video.title || "";
+        const results = document.getElementById("exp-youtube-results");
+        if (results)
+          results
+            .querySelectorAll(".exp-youtube-result")
+            .forEach((node, nodeIndex) => {
+              node.classList.toggle("selected", nodeIndex === index);
+            });
+      };
+
+      const expPendingDownloadNormalizations = new Map();
+      const expNormalizingSongs = new Set();
+
+      window.expDownloadSelectedSong = function (albumID) {
+        const video = expState.youtubeResult;
+        const titleRaw = document
+          .getElementById("exp-download-title")
+          ?.value.trim();
+        if (!video) return alert("Select a YouTube result first.");
+        if (!titleRaw) return alert("Enter the song title to save.");
+        const title = formatTitleCase(titleRaw);
+        const song = expCreateSongObject(
+          albumID,
+          title,
+          parseDuration(video.duration || ""),
+        );
+        songsDatabase.unshift(song);
+        expSaveDatabases(
+          "Song added. Download started. It will auto-normalize when the WAV is ready.",
+        );
+        expPendingDownloadNormalizations.set(song.songID, {
+          audioRel: song.paths.audio,
+          attempts: 0,
+        });
+        ipcRenderer.send("download-experimental-song", {
+          youtubeUrl: video.url,
+          title: song.title,
+          audioPath: song.paths.audio,
+          lyricsPath: song.paths.lyrics,
+        });
+        expOpenSongFromAlbum(song.songID);
+      };
+
+      function expSetStatus(message) {
+        const log = document.getElementById("exp-status");
+        if (log) log.textContent = message;
+        else alert(message);
+      }
+
+      function expTryNormalizePendingDownloads(delayMs = 0) {
+        setTimeout(() => {
+          expPendingDownloadNormalizations.forEach((pending, songID) => {
+            expNormalizeDownloadedSong(songID, pending);
+          });
+        }, delayMs);
+      }
+
+      function expParseIntegratedLufs(output) {
+        const text = String(output || "");
+        const integratedMatches = [
+          ...text.matchAll(/Integrated loudness:\s*[\s\S]*?I:\s*(-?\d+(?:\.\d+)?)\s*LUFS/gi),
+        ];
+        if (integratedMatches.length) {
+          const value = parseFloat(
+            integratedMatches[integratedMatches.length - 1][1],
+          );
+          if (Number.isFinite(value)) return value;
+        }
+
+        const shortMatches = [...text.matchAll(/\bI:\s*(-?\d+(?:\.\d+)?)\s*LUFS/gi)];
+        if (shortMatches.length) {
+          const value = parseFloat(shortMatches[shortMatches.length - 1][1]);
+          if (Number.isFinite(value)) return value;
+        }
+
+        return null;
+      }
+
+      function expNormalizeDownloadedSong(songID, pending) {
+        if (!pending || expNormalizingSongs.has(songID)) return;
+        const audioAbs = relToAbs(pending.audioRel);
+        let ready = false;
+        try {
+          ready = fs.existsSync(audioAbs) && fs.statSync(audioAbs).size > 4096;
+        } catch (err) {
+          ready = false;
+        }
+        if (!ready) {
+          pending.attempts = (pending.attempts || 0) + 1;
+          if (pending.attempts <= 20) {
+            setTimeout(() => expNormalizeDownloadedSong(songID, pending), 1500);
+          } else {
+            expSetStatus(
+              "Download finished, but I could not find the WAV to normalize: " +
+                pending.audioRel,
+            );
+          }
+          return;
+        }
+
+        const ffmpegPath = path.join(__dirname, "ffmpeg.exe");
+        const ffmpegExe = fs.existsSync(ffmpegPath) ? ffmpegPath : "ffmpeg";
+        const tmpAbs = path.join(
+          path.dirname(audioAbs),
+          `${path.basename(audioAbs, path.extname(audioAbs))}.__normalized_tmp.wav`,
+        );
+        const lufs = -10;
+        expNormalizingSongs.add(songID);
+        expSetStatus(
+          "Download finished. Measuring average loudness for static normalization...",
+        );
+
+        childProcess.execFile(
+          ffmpegExe,
+          [
+            "-hide_banner",
+            "-nostats",
+            "-i",
+            audioAbs,
+            "-filter_complex",
+            "ebur128=framelog=verbose",
+            "-f",
+            "null",
+            "-",
+          ],
+          { maxBuffer: 1024 * 1024 * 12 },
+          (measureError, stdout, stderr) => {
+            const measuredLufs = expParseIntegratedLufs(`${stdout}\n${stderr}`);
+            if (!Number.isFinite(measuredLufs)) {
+              expNormalizingSongs.delete(songID);
+              expSetStatus(
+                "Song downloaded, but I could not measure its LUFS. Try Batch Normalize manually.",
+              );
+              return;
+            }
+
+            const gainDb = lufs - measuredLufs;
+            expSetStatus(
+              `Measured ${measuredLufs.toFixed(2)} LUFS. Applying constant ${gainDb.toFixed(2)} dB gain...`,
+            );
+
+            childProcess.execFile(
+              ffmpegExe,
+              [
+                "-y",
+                "-i",
+                audioAbs,
+                "-af",
+                `volume=${gainDb.toFixed(2)}dB`,
+                "-c:a",
+                "pcm_s16le",
+                tmpAbs,
+              ],
+              (normalizeError) => {
+                expNormalizingSongs.delete(songID);
+                if (normalizeError) {
+                  try {
+                    if (fs.existsSync(tmpAbs)) fs.unlinkSync(tmpAbs);
+                  } catch (cleanupErr) {}
+                  expSetStatus(
+                    "Song downloaded, but static normalization failed. Try Batch Normalize manually.",
+                  );
+                  return;
+                }
+                try {
+                  fs.copyFileSync(tmpAbs, audioAbs);
+                  fs.unlinkSync(tmpAbs);
+                  expPendingDownloadNormalizations.delete(songID);
+                  expSetStatus(
+                    `Song downloaded, title formatted, and average-normalized to ${lufs} LUFS without changing internal dynamics.`,
+                  );
+                } catch (writeErr) {
+                  expSetStatus(
+                    "Normalization finished, but replacing the WAV failed: " +
+                      writeErr.message,
+                  );
+                }
+              },
+            );
+          },
+        );
+      }
+
+      window.expNormalizeCurrentSong = function () {
+        const song = songsDatabase.find((entry) => entry.songID === expState.selectedId);
+        if (!song) return alert("Select a song first.");
+        const audioInput = document.getElementById("exp-audio");
+        const audioRel = normalizeRelPath(audioInput?.value || song.paths?.audio || "");
+        if (!audioRel || audioRel === "./") return alert("This song has no audio path yet.");
+        const audioAbs = relToAbs(audioRel);
+        if (!fs.existsSync(audioAbs)) {
+          return alert("Could not find the WAV file at: " + audioRel);
+        }
+        if (!song.paths) song.paths = {};
+        song.paths.audio = audioRel;
+        expSetStatus("Manual normalization started for this song...");
+        expNormalizeDownloadedSong(song.songID, { audioRel, attempts: 0, manual: true });
+      };
+
+      ipcRenderer.on("experimental-download-reply", (event, message) => {
+        expSetStatus(message);
+        expTryNormalizePendingDownloads(500);
+        expTryNormalizePendingDownloads(3000);
+      });
+
+      // ==========================================
       // 3. AUTO DOWNLOADER & YOUTUBE SEARCH
       // ==========================================
       let isNewArtist = false;
@@ -663,7 +3456,7 @@
           input.style.display = "none";
           btn.innerText = "+ New Artist";
           btn.style.color = "var(--text-main)";
-          btn.style.borderColor = "#555";
+          btn.style.borderColor = "var(--border-strong)";
         }
       }
 
@@ -700,19 +3493,20 @@
 
       ipcRenderer.on("search-results", (event, response) => {
         const resultsDiv = document.getElementById("auto-search-results");
+        if (!resultsDiv) return;
         if (response.error) {
           resultsDiv.innerHTML = `<p style="color: #ff0050;">${response.error}</p>`;
           return;
         }
 
         let html = `<h3 style="margin-top:0; font-size: 14px;">Top 5 Results:</h3>`;
-        response.results.forEach((video) => {
+        response.results.slice(0, 5).forEach((video) => {
           let fDate = video.upload_date
             ? `${video.upload_date.substring(0, 4)}-${video.upload_date.substring(4, 6)}-${video.upload_date.substring(6, 8)}`
             : "";
           let thumb = video.thumbnail || "";
           html += `
-            <div style="background: #111; padding: 10px; margin-bottom: 8px; border-radius: 4px; border: 1px solid #333; cursor: pointer;" 
+            <div style="background: var(--bg-surface); padding: 10px; margin-bottom: 8px; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer;" 
                  onclick="selectSearchResult('${video.url}', '${video.title.replace(/'/g, "\\'")}', '${fDate}', '${video.duration}', '${thumb}')">
                 <div style="font-weight: bold; color: var(--text-main); font-size: 14px; margin-bottom: 4px;">${video.title}</div>
                 <div style="font-size: 12px; color: var(--text-muted);">${video.channel} • ${video.duration}</div>
@@ -852,7 +3646,7 @@
           container.innerHTML += `
             <div class="track-row">
               <div class="track-row-top">
-                <span style="color: #666; font-weight: bold; width: 25px;">${i}.</span>
+                <span style="color: var(--text-muted); font-weight: bold; width: 25px;">${i}.</span>
                 <input type="text" id="trk-title-${i}" class="ctrl-input" placeholder="Song Title" style="flex: 1; margin: 0;">
                 <input type="text" id="trk-dur-${i}" class="ctrl-input" placeholder="MM:SS" style="width: 80px; margin: 0;">
               </div>
@@ -913,8 +3707,7 @@
           const tSlug = makeSlug(tTitle);
           const songID = `${artistSlug}_${tSlug}`;
 
-          songsOut += `{\n  songID: "${songID}",\n  title: "${tTitle}",\n  artistID: "${artistID}",\n  albumID: "${albID}",\n  track: ${i},\n`;
-          if (finalSongDate) songsOut += `  releaseDate: "${finalSongDate}",\n`;
+          songsOut += `{\n  songID: "${songID}",\n  title: "${tTitle}",\n  artistID: "${artistID}",\n  albumID: "${albID}",\n  track: ${i},\n  releaseDate: "${finalSongDate}",\n`;
           songsOut += `  duration: ${tDur},\n\n  genre: ${tGenre},\n  tags: ${tTags},\n\n`;
           songsOut += `  paths: {\n    audio: "./assets/${artistSlug}/songs/${tSlug}.wav",\n    lyrics: "./assets/${artistSlug}/lyrics/${tSlug}.lrc"\n  }\n},\n`;
         }
@@ -932,6 +3725,82 @@
             copyBtn.innerText = originalText;
           }, 2000);
         });
+      }
+
+      // ==========================================
+      // 5. BATCH TITLE FORMATTER
+      // ==========================================
+      function formatTitleCase(text) {
+        if (!text) return text;
+        const minorWords = [
+          "a",
+          "an",
+          "the",
+          "and",
+          "but",
+          "or",
+          "for",
+          "nor",
+          "on",
+          "at",
+          "to",
+          "from",
+          "by",
+          "in",
+          "of",
+          "with",
+        ];
+        return text
+          .toLowerCase()
+          .split(" ")
+          .map((word, index, arr) => {
+            if (
+              index === 0 ||
+              index === arr.length - 1 ||
+              !minorWords.includes(word)
+            ) {
+              return word.charAt(0).toUpperCase() + word.slice(1);
+            }
+            return word;
+          })
+          .join(" ");
+      }
+
+      function autoFormatAllTitles() {
+        const fs = require("fs");
+        const path = require("path");
+
+        const dbFiles = [
+          "database_songs.js",
+          "database_albums.js",
+          "database_artists.js",
+        ];
+
+        dbFiles.forEach((fileName) => {
+          const filePath = path.join(__dirname, fileName);
+
+          if (fs.existsSync(filePath)) {
+            // Read the file exactly as it is (raw text)
+            let fileContent = fs.readFileSync(filePath, "utf8");
+
+            // Surgically replace ONLY the text inside title: "x"
+            fileContent = fileContent.replace(
+              /(title:\s*")([^"]+)(")/g,
+              (match, prefix, actualText, suffix) => {
+                return prefix + formatTitleCase(actualText) + suffix;
+              },
+            );
+
+            // (Artist replacement logic removed so artist names remain exactly as you typed them)
+
+            // Save it back with the original formatting untouched
+            fs.writeFileSync(filePath, fileContent, "utf8");
+          }
+        });
+
+        alert(
+          "Successfully formatted titles! (Artist names were left untouched)",
+        );
       }
     </script>
   </body>
