@@ -958,10 +958,24 @@
       // 1. ELECTRON BACKEND CONNECTION & UI MODALS
       // ==========================================
       const { ipcRenderer, shell } = require("electron");
+      const { exec } = require("child_process");
       const path = require("path");
       const fs = require("fs");
       const os = require("os");
       const childProcess = require("child_process");
+
+      // Function to launch the batch script in a new terminal
+      window.runBatchScript = function () {
+        // __dirname resolves to the current folder of this HTML file
+        const batPath = path.join(__dirname, "SONG_DOWNLOAD.bat");
+
+        // 'start ""' tells Windows to open a new interactive command prompt window
+        exec(`start "" "${batPath}"`, (error) => {
+          if (error) {
+            alert("Failed to launch script: " + error.message);
+          }
+        });
+      };
 
       // Inject custom NewMusic Alert Modal
       window.showCustomAlert = function (msg) {

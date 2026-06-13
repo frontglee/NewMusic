@@ -44,87 +44,6 @@ const SYNC_DISCOVERY_PORT = 46385;
 const SYNC_DISCOVERY_TYPE = 'newmusic-sync-discover';
 const SYNC_DISCOVERY_RESPONSE_TYPE = 'newmusic-sync-response';
 
-function psQuote(value) {
-    return `'${String(value).replace(/'/g, "''")}'`;
-}
-
-function getSyncSetupScriptPath() {
-    return path.join(__dirname, 'Setup-NewMusicSync.ps1');
-}
-
-function getPackagedNewMusicExePath() {
-    const candidates = [
-        process.execPath,
-        path.resolve(__dirname, '..', '..', 'NewMusic.exe')
-    ];
-    return candidates.find(candidate =>
-        path.basename(candidate).toLowerCase() === 'newmusic.exe' &&
-        fs.existsSync(candidate)
-    ) || null;
-}
-
-function runPowerShell(command) {
-    return new Promise((resolve, reject) => {
-        execFile('powershell.exe', [
-            '-NoProfile',
-            '-ExecutionPolicy',
-            'Bypass',
-            '-Command',
-            command
-        ], { windowsHide: true }, (error, stdout, stderr) => {
-            if (error) {
-                reject(new Error((stderr || error.message || '').trim()));
-                return;
-            }
-            resolve(stdout.trim());
-        });
-    });
-}
-
-async function getSyncSetupStatus() {
-    const scriptPath = getSyncSetupScriptPath();
-    const exePath = getPackagedNewMusicExePath();
-
-    if (!fs.existsSync(scriptPath)) {
-        return {
-            available: false,
-            configured: false,
-            message: 'Sync setup script is missing from this app folder.'
-        };
-    }
-
-    if (!exePath) {
-        return {
-            available: false,
-            configured: false,
-            message: 'First-time sync setup is available after building/running the packaged NewMusic.exe release.'
-        };
-    }
-
-    const command = `
-$exe = ${psQuote(exePath)}
-function Test-NewMusicRule($name, $protocol, $port) {
-    $rules = Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue | Where-Object {
-        $_.Enabled -eq 'True' -and $_.Direction -eq 'Inbound' -and $_.Action -eq 'Allow'
-    }
-    foreach ($rule in $rules) {
-        $app = $rule | Get-NetFirewallApplicationFilter
-        $ports = $rule | Get-NetFirewallPortFilter
-        $programMatches = $app.Program -ieq $exe
-        $protocolMatches = $ports.Protocol -eq $protocol
-        $portMatches = $port -eq 'Any' -or $ports.LocalPort -eq $port
-        if ($programMatches -and $protocolMatches -and $portMatches) { return $true }
-    }
-    return $false
-}
-$tcp = Test-NewMusicRule 'NewMusic Sync TCP' 'TCP' 'Any'
-$udp = Test-NewMusicRule 'NewMusic Sync Discovery UDP' 'UDP' '46385'
-[pscustomobject]@{ available = $true; configured = ($tcp -and $udp); tcp = $tcp; udp = $udp; exe = $exe } | ConvertTo-Json -Compress
-`;
-    const output = await runPowerShell(command);
-    return JSON.parse(output);
-}
-
 function readMobileSyncManifest() {
     const manifestPath = path.join(__dirname, 'mobile-www', 'sync-manifest.json');
     if (!fs.existsSync(manifestPath)) {
@@ -483,37 +402,6 @@ ipcMain.handle('sync-build-mobile-bundle', async () => {
     try {
         await stopSyncServer();
         return buildMobileSyncBundle();
-    } catch (error) {
-        return { ok: false, error: error.message };
-    }
-});
-
-ipcMain.handle('sync-setup-status', async () => {
-    try {
-        return await getSyncSetupStatus();
-    } catch (error) {
-        return { available: false, configured: false, error: error.message };
-    }
-});
-
-ipcMain.handle('sync-run-first-time-setup', async () => {
-    try {
-        const scriptPath = getSyncSetupScriptPath();
-        const exePath = getPackagedNewMusicExePath();
-        if (!fs.existsSync(scriptPath)) throw new Error('Setup-NewMusicSync.ps1 is missing.');
-        if (!exePath) throw new Error('Build/run the packaged NewMusic.exe release before running sync setup.');
-
-        const child = execFile('powershell.exe', [
-            '-NoProfile',
-            '-ExecutionPolicy',
-            'Bypass',
-            '-File',
-            scriptPath,
-            '-NewMusicExe',
-            exePath
-        ], { windowsHide: false }, () => {});
-        if (typeof child.unref === 'function') child.unref();
-        return { ok: true };
     } catch (error) {
         return { ok: false, error: error.message };
     }

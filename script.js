@@ -8,8 +8,6 @@ const path = require('path');
 const PC_SYNC_KEY_STORAGE = 'newmusicPCSyncKey';
 let pcSyncServerState = null;
 let pcSyncBuildStatus = '';
-let pcSyncSetupStatus = null;
-let pcSyncSetupMessage = '';
 
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -51,38 +49,6 @@ async function refreshPCSyncServerStatus() {
     pcSyncServerState = await ipcRenderer.invoke('sync-server-status');
     return pcSyncServerState;
 }
-
-async function refreshPCSyncSetupStatus() {
-    pcSyncSetupStatus = await ipcRenderer.invoke('sync-setup-status');
-    return pcSyncSetupStatus;
-}
-
-window.checkPCSyncSetup = async function() {
-    pcSyncSetupMessage = 'Checking sync setup...';
-    renderSettingsView();
-
-    await refreshPCSyncSetupStatus();
-    if (pcSyncSetupStatus?.configured) {
-        pcSyncSetupMessage = 'Sync setup is ready.';
-        await ensurePCSyncServerRunning({ quiet: true });
-    } else {
-        pcSyncSetupMessage = pcSyncSetupStatus?.message || pcSyncSetupStatus?.error || 'Sync setup is not ready yet.';
-    }
-    renderSettingsView();
-};
-
-window.runPCSyncFirstTimeSetup = async function() {
-    pcSyncSetupMessage = 'Opening Windows sync setup... approve the admin prompt if it appears.';
-    renderSettingsView();
-
-    const result = await ipcRenderer.invoke('sync-run-first-time-setup');
-    if (result?.error) {
-        pcSyncSetupMessage = `Could not start setup: ${result.error}`;
-    } else {
-        pcSyncSetupMessage = 'Finish the setup window, then click Check Setup.';
-    }
-    renderSettingsView();
-};
 
 window.startPCSyncServer = async function() {
     await ensurePCSyncServerRunning();
@@ -1082,33 +1048,6 @@ function renderSettingsView() {
             </ul>
         </section>
     `;
-    const syncSetupHtml = `
-        <section class="sync-card">
-            <div class="sync-header">
-                <div>
-                    <h3>PC to Mobile Sync</h3>
-                    <p>Run the first-time Windows setup before starting the phone sender.</p>
-                </div>
-                <span class="sync-status sync-status-dot">
-                    <span></span>Setup needed
-                </span>
-            </div>
-            <div class="sync-subpanel">
-                <div class="sync-subpanel-header">
-                    <div>
-                        <h4>First-Time Setup</h4>
-                        <p>Adds the Windows Firewall rules NewMusic needs for phone sync on Private networks.</p>
-                    </div>
-                    <div class="sync-actions-inline">
-                        <button class="btn-primary" onclick="runPCSyncFirstTimeSetup()">Set Up Sync</button>
-                        <button class="btn-secondary" onclick="checkPCSyncSetup()">Check Setup</button>
-                    </div>
-                </div>
-                <p class="sync-note">${escapeHTML(pcSyncSetupMessage || pcSyncSetupStatus?.message || pcSyncSetupStatus?.error || 'Setup has not been checked yet.')}</p>
-            </div>
-        </section>
-    `;
-    const syncSectionHtml = pcSyncSetupStatus?.configured ? syncSenderHtml : syncSetupHtml;
 
     contentArea.innerHTML = `
         <h1 class="header-title">Settings</h1>
@@ -1180,7 +1119,7 @@ function renderSettingsView() {
             </div>
             
                         <div style="height: 1px; background: var(--border-color); width: 100%;"></div>
-            ${syncSectionHtml}
+            ${syncSenderHtml}
 
             <div style="height: 1px; background: var(--border-color); width: 100%;"></div>
             <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(255,0,0,0.05); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,0,0,0.2);">
@@ -3752,7 +3691,6 @@ ipcRenderer.on('backend-reply', (event, msg) => {
 
 // Boot up the databases and routing on startup
 loadDatabases();
-refreshPCSyncSetupStatus().then(async status => {
-    if (status?.configured) await ensurePCSyncServerRunning({ quiet: true });
+ensurePCSyncServerRunning({ quiet: true }).then(() => {
     if (window.location.hash === '#settings') renderSettingsView();
 });

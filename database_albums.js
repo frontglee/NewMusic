@@ -1,1 +1,1 @@
-﻿const albumsDatabase = [];
+const albumsDatabase = [];

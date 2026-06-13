@@ -1,1 +1,1 @@
-﻿const artistsDatabase = [];
+const artistsDatabase = [];

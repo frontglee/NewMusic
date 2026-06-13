@@ -1,7 +1,3 @@
-param(
-    [string]$NewMusicExe = ""
-)
-
 $ErrorActionPreference = "Stop"
 
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -9,19 +5,12 @@ $principal = New-Object Security.Principal.WindowsPrincipal($identity)
 $isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 if (-not $isAdmin) {
-    $argsList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$PSCommandPath`"")
-    if (-not [string]::IsNullOrWhiteSpace($NewMusicExe)) {
-        $argsList += @("-NewMusicExe", "`"$NewMusicExe`"")
-    }
-    Start-Process powershell.exe -Verb RunAs -ArgumentList $argsList
+    Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File `"$PSCommandPath`""
     exit
 }
 
-$newMusicExe = $NewMusicExe
-if ([string]::IsNullOrWhiteSpace($newMusicExe)) {
-    $appRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
-    $newMusicExe = Join-Path $appRoot "NewMusic.exe"
-}
+$appRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$newMusicExe = Join-Path $appRoot "NewMusic.exe"
 
 if (-not (Test-Path -LiteralPath $newMusicExe)) {
     throw "NewMusic.exe was not found at $newMusicExe"
