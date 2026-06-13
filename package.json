@@ -6,7 +6,8 @@
     "main": "main.js",
     "description": "Local Music Player",
     "scripts": {
-        "start": "electron ."
+        "start": "electron .",
+        "mobile:web": "node build-mobile-web.js"
     },
     "devDependencies": {
         "electron": "^42.3.0"

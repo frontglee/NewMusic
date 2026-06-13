@@ -606,6 +606,33 @@ body {
     margin-left: -4px; 
 }
 
+.sync-card { padding: 18px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); }
+.sync-header, .sync-subpanel-header { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+.sync-header h3, .sync-subpanel h4 { margin: 0 0 5px 0; color: var(--text-main); }
+.sync-header p, .sync-subpanel p, .sync-note, .sync-rules { margin: 0; color: var(--text-muted); font-size: 13px; }
+.sync-status { border: 1px solid var(--border-color); border-radius: 999px; padding: 6px 10px; color: var(--text-main); white-space: nowrap; }
+.sync-status-dot { display: inline-flex; align-items: center; gap: 8px; }
+.sync-status-dot span { width: 8px; height: 8px; border-radius: 50%; background: #777; box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
+.sync-status-dot.is-running span { background: #27d17f; box-shadow: 0 0 0 3px rgba(39,209,127,0.18); }
+.sync-key-box { margin-top: 14px; display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-elevated); }
+.sync-key-box span, .sync-url { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+.sync-subpanel { margin-top: 14px; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-elevated); }
+.sync-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.sync-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sync-field span { color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.sync-field-wide { grid-column: 1 / -1; }
+.sync-actions-row { display: flex; justify-content: flex-end; margin-top: 14px; }
+.sync-actions-inline { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.sync-url-list { display: grid; gap: 8px; margin-top: 12px; }
+.sync-url { width: 100%; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main); padding: 10px; text-align: left; cursor: pointer; }
+.sync-note { margin-top: 10px; }
+.sync-rules { padding-left: 18px; margin-top: 14px; }
+.settings-switch { position: relative; display: inline-block; width: 50px; height: 28px; flex: 0 0 auto; }
+.settings-switch input { opacity: 0; width: 0; height: 0; }
+.settings-switch span { position: absolute; cursor: pointer; inset: 0; background: var(--bg-surface-strong); border: 1px solid var(--border-color); border-radius: 999px; transition: background-color 0.2s, border-color 0.2s; }
+.settings-switch span::before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; border-radius: 50%; background: var(--text-main); transition: transform 0.2s, background-color 0.2s; }
+.settings-switch input:checked + span { background: var(--accent-color); border-color: var(--accent-color); }
+.settings-switch input:checked + span::before { transform: translateX(22px); background: var(--accent-contrast); }
 .btn-primary, .btn-secondary {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 12px 24px; border-radius: 30px; font-weight: bold; cursor: pointer;

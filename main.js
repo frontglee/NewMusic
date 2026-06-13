@@ -2,6 +2,9 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { exec, execFile } = require('child_process');
 const fs = require('fs');
+const http = require('http');
+const os = require('os');
+const dgram = require('dgram');
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
@@ -29,6 +32,491 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
+});
+
+// ==========================================
+// NEWMUSIC PC -> MOBILE SYNC SERVER
+// ==========================================
+let syncServer = null;
+let syncServerState = null;
+let syncDiscoverySocket = null;
+const SYNC_DISCOVERY_PORT = 46385;
+const SYNC_DISCOVERY_TYPE = 'newmusic-sync-discover';
+const SYNC_DISCOVERY_RESPONSE_TYPE = 'newmusic-sync-response';
+
+function psQuote(value) {
+    return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function getSyncSetupScriptPath() {
+    return path.join(__dirname, 'Setup-NewMusicSync.ps1');
+}
+
+function getPackagedNewMusicExePath() {
+    const candidates = [
+        process.execPath,
+        path.resolve(__dirname, '..', '..', 'NewMusic.exe')
+    ];
+    return candidates.find(candidate =>
+        path.basename(candidate).toLowerCase() === 'newmusic.exe' &&
+        fs.existsSync(candidate)
+    ) || null;
+}
+
+function runPowerShell(command) {
+    return new Promise((resolve, reject) => {
+        execFile('powershell.exe', [
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-Command',
+            command
+        ], { windowsHide: true }, (error, stdout, stderr) => {
+            if (error) {
+                reject(new Error((stderr || error.message || '').trim()));
+                return;
+            }
+            resolve(stdout.trim());
+        });
+    });
+}
+
+async function getSyncSetupStatus() {
+    const scriptPath = getSyncSetupScriptPath();
+    const exePath = getPackagedNewMusicExePath();
+
+    if (!fs.existsSync(scriptPath)) {
+        return {
+            available: false,
+            configured: false,
+            message: 'Sync setup script is missing from this app folder.'
+        };
+    }
+
+    if (!exePath) {
+        return {
+            available: false,
+            configured: false,
+            message: 'First-time sync setup is available after building/running the packaged NewMusic.exe release.'
+        };
+    }
+
+    const command = `
+$exe = ${psQuote(exePath)}
+function Test-NewMusicRule($name, $protocol, $port) {
+    $rules = Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue | Where-Object {
+        $_.Enabled -eq 'True' -and $_.Direction -eq 'Inbound' -and $_.Action -eq 'Allow'
+    }
+    foreach ($rule in $rules) {
+        $app = $rule | Get-NetFirewallApplicationFilter
+        $ports = $rule | Get-NetFirewallPortFilter
+        $programMatches = $app.Program -ieq $exe
+        $protocolMatches = $ports.Protocol -eq $protocol
+        $portMatches = $port -eq 'Any' -or $ports.LocalPort -eq $port
+        if ($programMatches -and $protocolMatches -and $portMatches) { return $true }
+    }
+    return $false
+}
+$tcp = Test-NewMusicRule 'NewMusic Sync TCP' 'TCP' 'Any'
+$udp = Test-NewMusicRule 'NewMusic Sync Discovery UDP' 'UDP' '46385'
+[pscustomobject]@{ available = $true; configured = ($tcp -and $udp); tcp = $tcp; udp = $udp; exe = $exe } | ConvertTo-Json -Compress
+`;
+    const output = await runPowerShell(command);
+    return JSON.parse(output);
+}
+
+function readMobileSyncManifest() {
+    const manifestPath = path.join(__dirname, 'mobile-www', 'sync-manifest.json');
+    if (!fs.existsSync(manifestPath)) {
+        throw new Error('Missing mobile sync manifest. Run npm run mobile:web first.');
+    }
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const files = new Set((manifest.files || []).map(file => file.path));
+    return { manifest, files };
+}
+
+function getLatestSourceMtimeMs(targetPath) {
+    if (!fs.existsSync(targetPath)) return 0;
+
+    const stat = fs.statSync(targetPath);
+    if (!stat.isDirectory()) return stat.mtimeMs;
+
+    return fs.readdirSync(targetPath, { withFileTypes: true }).reduce((latest, entry) => {
+        const entryPath = path.join(targetPath, entry.name);
+        if (entry.isDirectory()) {
+            return Math.max(latest, getLatestSourceMtimeMs(entryPath));
+        }
+        if (entry.isFile()) {
+            return Math.max(latest, fs.statSync(entryPath).mtimeMs);
+        }
+        return latest;
+    }, stat.mtimeMs);
+}
+
+function getLatestMobileSourceMtimeMs() {
+    const sources = [
+        path.join(__dirname, 'database_artists.js'),
+        path.join(__dirname, 'database_albums.js'),
+        path.join(__dirname, 'database_songs.js'),
+        path.join(__dirname, 'index.html'),
+        path.join(__dirname, 'style.css'),
+        path.join(__dirname, 'script.js'),
+        path.join(__dirname, 'assets')
+    ];
+
+    return sources.reduce((latest, source) => Math.max(latest, getLatestSourceMtimeMs(source)), 0);
+}
+
+function isMobileSyncBundleStale() {
+    const manifestPath = path.join(__dirname, 'mobile-www', 'sync-manifest.json');
+    if (!fs.existsSync(manifestPath)) return true;
+    return getLatestMobileSourceMtimeMs() > fs.statSync(manifestPath).mtimeMs + 1000;
+}
+
+function reloadSyncServerManifest() {
+    if (!syncServerState) return;
+    const { manifest, files } = readMobileSyncManifest();
+    syncServerState.manifest = manifest;
+    syncServerState.files = files;
+}
+
+function ensureMobileSyncBundleFresh() {
+    if (!isMobileSyncBundleStale()) return false;
+    buildMobileSyncBundle();
+    reloadSyncServerManifest();
+    return true;
+}
+
+function getLanIpInterfaces() {
+    const interfaces = [];
+    const networks = os.networkInterfaces();
+    for (const items of Object.values(networks)) {
+        for (const item of items || []) {
+            if (item.family === 'IPv4' && !item.internal) {
+                interfaces.push({ address: item.address, netmask: item.netmask });
+            }
+        }
+    }
+    return interfaces;
+}
+
+function getLanIpAddresses() {
+    return getLanIpInterfaces().map(item => item.address);
+}
+
+function ipv4ToInt(address) {
+    return address.split('.').reduce((total, part) => ((total << 8) + (parseInt(part, 10) || 0)) >>> 0, 0);
+}
+
+function isSameSubnet(localAddress, remoteAddress, netmask) {
+    if (!localAddress || !remoteAddress || !netmask) return false;
+    return (ipv4ToInt(localAddress) & ipv4ToInt(netmask)) === (ipv4ToInt(remoteAddress) & ipv4ToInt(netmask));
+}
+
+function getBestSyncUrlForRemote(remoteAddress) {
+    const interfaces = getLanIpInterfaces();
+    const match = interfaces.find(item => isSameSubnet(item.address, remoteAddress, item.netmask));
+    const address = match?.address || interfaces[0]?.address || '127.0.0.1';
+    return `http://${address}:${syncServerState.port}`;
+}
+
+function getSyncServerStatus() {
+    if (!syncServerState) return { running: false };
+    return {
+        running: true,
+        port: syncServerState.port,
+        urls: syncServerState.urls,
+        startedAt: syncServerState.startedAt,
+        manifest: {
+            generatedAt: syncServerState.manifest.generatedAt,
+            counts: syncServerState.manifest.counts,
+            audioBitrate: syncServerState.manifest.audioBitrate
+        }
+    };
+}
+
+function writeSyncHeaders(res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-NewMusic-Sync-Key');
+    res.setHeader('Access-Control-Max-Age', '3600');
+}
+
+function sendSyncJson(res, statusCode, data) {
+    writeSyncHeaders(res);
+    res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(data));
+}
+
+function hasValidSyncKey(req, url) {
+    const provided = url.searchParams.get('key') || req.headers['x-newmusic-sync-key'];
+    return typeof provided === 'string' && provided.length > 0 && provided === syncServerState?.key;
+}
+
+function getMimeType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.mp3') return 'audio/mpeg';
+    if (ext === '.png') return 'image/png';
+    if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+    if (ext === '.webp') return 'image/webp';
+    if (ext === '.lrc' || ext === '.txt') return 'text/plain; charset=utf-8';
+    if (ext === '.json') return 'application/json; charset=utf-8';
+    return 'application/octet-stream';
+}
+
+function createSyncRequestHandler() {
+    return (req, res) => {
+        writeSyncHeaders(res);
+        if (req.method === 'OPTIONS') {
+            res.writeHead(204);
+            res.end();
+            return;
+        }
+
+        const url = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`);
+        if (!hasValidSyncKey(req, url)) {
+            sendSyncJson(res, 401, { error: 'Invalid or missing sync key.' });
+            return;
+        }
+
+        if (url.pathname === '/sync/health') {
+            sendSyncJson(res, 200, { ok: true, app: 'NewMusic', startedAt: syncServerState.startedAt });
+            return;
+        }
+
+        if (url.pathname === '/sync/manifest') {
+            try {
+                ensureMobileSyncBundleFresh();
+            } catch (error) {
+                sendSyncJson(res, 500, { error: `Could not rebuild mobile sync bundle: ${error.message}` });
+                return;
+            }
+            sendSyncJson(res, 200, syncServerState.manifest);
+            return;
+        }
+
+        if (url.pathname.startsWith('/sync/file/')) {
+            const requested = decodeURIComponent(url.pathname.slice('/sync/file/'.length)).replace(/\\/g, '/');
+            const normalized = path.posix.normalize(requested);
+            if (normalized.startsWith('../') || normalized.startsWith('/') || !syncServerState.files.has(normalized)) {
+                sendSyncJson(res, 404, { error: 'Unknown sync file.' });
+                return;
+            }
+
+            const absolutePath = path.join(__dirname, 'mobile-www', normalized);
+            if (!fs.existsSync(absolutePath)) {
+                sendSyncJson(res, 404, { error: 'Sync file is missing on PC.' });
+                return;
+            }
+
+            res.writeHead(200, {
+                'Content-Type': getMimeType(absolutePath),
+                'Content-Length': fs.statSync(absolutePath).size
+            });
+            fs.createReadStream(absolutePath).pipe(res);
+            return;
+        }
+
+        sendSyncJson(res, 404, { error: 'Unknown sync endpoint.' });
+    };
+}
+
+function startSyncDiscoveryResponder() {
+    if (syncDiscoverySocket) return;
+
+    const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+    syncDiscoverySocket = socket;
+
+    socket.on('message', (message, rinfo) => {
+        let payload = null;
+        try {
+            payload = JSON.parse(message.toString('utf8'));
+        } catch (err) {
+            return;
+        }
+
+        if (!syncServerState) return;
+        if (payload?.type !== SYNC_DISCOVERY_TYPE) return;
+
+        if (payload?.key !== syncServerState.key) {
+            const rejected = Buffer.from(JSON.stringify({
+                app: 'NewMusic',
+                type: 'newmusic-sync-key-rejected',
+                protocol: 1
+            }));
+            socket.send(rejected, rinfo.port, rinfo.address);
+            return;
+        }
+
+        const response = Buffer.from(JSON.stringify({
+            app: 'NewMusic',
+            type: SYNC_DISCOVERY_RESPONSE_TYPE,
+            protocol: 1,
+            url: getBestSyncUrlForRemote(rinfo.address),
+            urls: syncServerState.urls,
+            port: syncServerState.port,
+            startedAt: syncServerState.startedAt
+        }));
+
+        socket.send(response, rinfo.port, rinfo.address);
+    });
+
+    socket.on('error', err => {
+        console.warn('Sync discovery responder stopped:', err.message);
+        try { socket.close(); } catch (closeErr) {}
+        if (syncDiscoverySocket === socket) syncDiscoverySocket = null;
+    });
+
+    socket.bind(SYNC_DISCOVERY_PORT, '0.0.0.0', () => {
+        try { socket.setBroadcast(true); } catch (err) {}
+    });
+}
+
+function stopSyncDiscoveryResponder() {
+    if (!syncDiscoverySocket) return;
+    const socket = syncDiscoverySocket;
+    syncDiscoverySocket = null;
+    try { socket.close(); } catch (err) {}
+}
+
+async function startSyncServer(key) {
+    const cleanKey = String(key || '').trim();
+    if (cleanKey.length < 8) throw new Error('Sync key is too short.');
+    if (syncServerState) return getSyncServerStatus();
+
+    ensureMobileSyncBundleFresh();
+    const { manifest, files } = readMobileSyncManifest();
+
+    return await new Promise((resolve, reject) => {
+        const server = http.createServer(createSyncRequestHandler());
+        server.once('error', reject);
+        server.listen(0, '0.0.0.0', () => {
+            syncServer = server;
+            const port = server.address().port;
+            const urls = getLanIpAddresses().map(address => `http://${address}:${port}`);
+            syncServerState = {
+                key: cleanKey,
+                manifest,
+                files,
+                port,
+                urls,
+                startedAt: new Date().toISOString()
+            };
+            startSyncDiscoveryResponder();
+            resolve(getSyncServerStatus());
+        });
+    });
+}
+
+async function stopSyncServer() {
+    if (!syncServer) {
+        syncServerState = null;
+        return { running: false };
+    }
+
+    const server = syncServer;
+    syncServer = null;
+    syncServerState = null;
+    stopSyncDiscoveryResponder();
+    await new Promise(resolve => server.close(resolve));
+    return { running: false };
+}
+
+function buildMobileSyncBundle() {
+    const scriptPath = path.join(__dirname, 'build-mobile-web.js');
+    if (!fs.existsSync(scriptPath)) {
+        throw new Error('Missing build-mobile-web.js.');
+    }
+
+    const logs = [];
+    const originalLog = console.log;
+    const originalError = console.error;
+    console.log = (...args) => {
+        logs.push(args.join(' '));
+        originalLog(...args);
+    };
+    console.error = (...args) => {
+        logs.push(args.join(' '));
+        originalError(...args);
+    };
+
+    try {
+        delete require.cache[require.resolve(scriptPath)];
+        require(scriptPath);
+    } finally {
+        console.log = originalLog;
+        console.error = originalError;
+    }
+
+    const { manifest } = readMobileSyncManifest();
+    return {
+        ok: true,
+        logs,
+        manifest: {
+            generatedAt: manifest.generatedAt,
+            counts: manifest.counts,
+            audioBitrate: manifest.audioBitrate
+        }
+    };
+}
+
+ipcMain.handle('sync-server-start', async (event, payload = {}) => {
+    try {
+        return await startSyncServer(payload.key);
+    } catch (error) {
+        return { running: false, error: error.message };
+    }
+});
+
+ipcMain.handle('sync-server-stop', async () => {
+    try {
+        return await stopSyncServer();
+    } catch (error) {
+        return { running: false, error: error.message };
+    }
+});
+
+ipcMain.handle('sync-server-status', async () => getSyncServerStatus());
+
+ipcMain.handle('sync-build-mobile-bundle', async () => {
+    try {
+        await stopSyncServer();
+        return buildMobileSyncBundle();
+    } catch (error) {
+        return { ok: false, error: error.message };
+    }
+});
+
+ipcMain.handle('sync-setup-status', async () => {
+    try {
+        return await getSyncSetupStatus();
+    } catch (error) {
+        return { available: false, configured: false, error: error.message };
+    }
+});
+
+ipcMain.handle('sync-run-first-time-setup', async () => {
+    try {
+        const scriptPath = getSyncSetupScriptPath();
+        const exePath = getPackagedNewMusicExePath();
+        if (!fs.existsSync(scriptPath)) throw new Error('Setup-NewMusicSync.ps1 is missing.');
+        if (!exePath) throw new Error('Build/run the packaged NewMusic.exe release before running sync setup.');
+
+        const child = execFile('powershell.exe', [
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            scriptPath,
+            '-NewMusicExe',
+            exePath
+        ], { windowsHide: false }, () => {});
+        if (typeof child.unref === 'function') child.unref();
+        return { ok: true };
+    } catch (error) {
+        return { ok: false, error: error.message };
+    }
 });
 
 // ==========================================
@@ -317,16 +805,39 @@ ipcMain.on('save-database', (event, { file, data }) => {
     }
 });
 
+function resolveAppRelativePath(relativePath) {
+    const resolved = path.resolve(__dirname, String(relativePath || '').replace(/^\.\//, ''));
+    const root = path.resolve(__dirname);
+    if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+        throw new Error(`Refusing to delete outside app folder: ${relativePath}`);
+    }
+    return resolved;
+}
+
 ipcMain.on('execute-nuclear-delete', (event, payload) => {
     const { filesToDelete, foldersToDelete, databases } = payload;
-    if (filesToDelete) filesToDelete.forEach(file => { try { const fp = path.join(__dirname, file); if (fs.existsSync(fp)) fs.unlinkSync(fp); } catch(e){} });
-    if (foldersToDelete) foldersToDelete.forEach(folder => { try { const fp = path.join(__dirname, folder); if (fs.existsSync(fp)) fs.rmSync(fp, { recursive: true, force: true }); } catch(e){} });
+    if (filesToDelete) filesToDelete.forEach(file => {
+        try {
+            const fp = resolveAppRelativePath(file);
+            if (fs.existsSync(fp) && fs.statSync(fp).isFile()) fs.unlinkSync(fp);
+        } catch(e) {
+            event.reply('backend-reply', `File delete failed for ${file}: ${e.message}`);
+        }
+    });
+    if (foldersToDelete) foldersToDelete.forEach(folder => {
+        try {
+            const fp = resolveAppRelativePath(folder);
+            if (fs.existsSync(fp) && fs.statSync(fp).isDirectory()) fs.rmSync(fp, { recursive: true, force: true });
+        } catch(e) {
+            event.reply('backend-reply', `Folder delete failed for ${folder}: ${e.message}`);
+        }
+    });
     if (databases) {
         for (const [fileName, dataString] of Object.entries(databases)) {
             try { fs.writeFileSync(path.join(__dirname, fileName), dataString, 'utf8'); } catch(e){ event.reply('backend-reply', `Database delete update failed for ${fileName}: ${e.message}`); }
         }
     }
-    event.reply('backend-reply', 'Database deletion completed. Restart the app if the view still shows deleted items.');
+    event.reply('backend-reply', 'Database and related asset deletion completed. Restart the app if the view still shows deleted items.');
 });
 
 ipcMain.on('save-account-data', (event, accountData) => {

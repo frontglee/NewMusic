@@ -5,6 +5,133 @@ const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
+const PC_SYNC_KEY_STORAGE = 'newmusicPCSyncKey';
+let pcSyncServerState = null;
+let pcSyncBuildStatus = '';
+let pcSyncSetupStatus = null;
+let pcSyncSetupMessage = '';
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
+function generateSyncKey() {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, '0').toUpperCase()).join('').match(/.{1,4}/g).join('-');
+}
+
+function getSyncKey() {
+    let key = localStorage.getItem(PC_SYNC_KEY_STORAGE);
+    if (!key) {
+        key = generateSyncKey();
+        localStorage.setItem(PC_SYNC_KEY_STORAGE, key);
+    }
+    return key;
+}
+
+async function ensurePCSyncServerRunning(options = {}) {
+    const status = await ipcRenderer.invoke('sync-server-start', { key: getSyncKey() });
+    if (status?.error) {
+        if (!options.quiet) alert(status.error);
+        pcSyncServerState = status;
+        return status;
+    }
+    pcSyncServerState = status;
+    return status;
+}
+
+async function refreshPCSyncServerStatus() {
+    pcSyncServerState = await ipcRenderer.invoke('sync-server-status');
+    return pcSyncServerState;
+}
+
+async function refreshPCSyncSetupStatus() {
+    pcSyncSetupStatus = await ipcRenderer.invoke('sync-setup-status');
+    return pcSyncSetupStatus;
+}
+
+window.checkPCSyncSetup = async function() {
+    pcSyncSetupMessage = 'Checking sync setup...';
+    renderSettingsView();
+
+    await refreshPCSyncSetupStatus();
+    if (pcSyncSetupStatus?.configured) {
+        pcSyncSetupMessage = 'Sync setup is ready.';
+        await ensurePCSyncServerRunning({ quiet: true });
+    } else {
+        pcSyncSetupMessage = pcSyncSetupStatus?.message || pcSyncSetupStatus?.error || 'Sync setup is not ready yet.';
+    }
+    renderSettingsView();
+};
+
+window.runPCSyncFirstTimeSetup = async function() {
+    pcSyncSetupMessage = 'Opening Windows sync setup... approve the admin prompt if it appears.';
+    renderSettingsView();
+
+    const result = await ipcRenderer.invoke('sync-run-first-time-setup');
+    if (result?.error) {
+        pcSyncSetupMessage = `Could not start setup: ${result.error}`;
+    } else {
+        pcSyncSetupMessage = 'Finish the setup window, then click Check Setup.';
+    }
+    renderSettingsView();
+};
+
+window.startPCSyncServer = async function() {
+    await ensurePCSyncServerRunning();
+    renderSettingsView();
+};
+
+window.stopPCSyncServer = async function() {
+    pcSyncServerState = await ipcRenderer.invoke('sync-server-stop');
+    renderSettingsView();
+};
+
+window.rebuildMobileSyncBundle = async function() {
+    pcSyncBuildStatus = 'Building mobile bundle... The app may pause while audio is converted.';
+    renderSettingsView();
+
+    const result = await ipcRenderer.invoke('sync-build-mobile-bundle');
+    if (result?.error) {
+        pcSyncBuildStatus = `Mobile bundle build failed: ${result.error}`;
+        renderSettingsView();
+        return;
+    }
+
+    const counts = result.manifest?.counts || {};
+    pcSyncBuildStatus = `Mobile bundle ready: ${counts.songs || 0} songs, ${counts.files || 0} files.`;
+    await ensurePCSyncServerRunning({ quiet: true });
+    renderSettingsView();
+};
+
+window.copySyncUrl = async function(url) {
+    try {
+        await navigator.clipboard.writeText(url);
+        alert('Sync URL copied.');
+    } catch (err) {
+        alert(url);
+    }
+};
+
+window.regenerateSyncKey = function() {
+    showCustomConfirm('Create a new sync key? The old key will stop pairing new mobile sync sessions.', async () => {
+        const wasRunning = pcSyncServerState?.running;
+        localStorage.setItem(PC_SYNC_KEY_STORAGE, generateSyncKey());
+        if (wasRunning) {
+            await ipcRenderer.invoke('sync-server-stop');
+            await ensurePCSyncServerRunning({ quiet: true });
+        }
+        renderSettingsView();
+    });
+};
+
 // ==========================================
 // 3. DATABASE INITIALIZATION (Local Loading)
 // ==========================================
@@ -911,6 +1038,78 @@ if (!document.getElementById('edit-styles')) {
 function renderSettingsView() {
     localStorage.removeItem('isAutoDLMode');
     localStorage.setItem('isExperimentalMode', 'true');
+
+    const syncKey = getSyncKey();
+    const syncSenderHtml = `
+        <section class="sync-card">
+            <div class="sync-header">
+                <div>
+                    <h3>PC to Mobile Sync</h3>
+                    <p>One-way sync only. This PC sends the mobile library; the phone never pushes edits back.</p>
+                </div>
+                <span class="sync-status sync-status-dot ${pcSyncServerState?.running ? 'is-running' : ''}">
+                    <span></span>${pcSyncServerState?.running ? 'Sender on' : 'Sender off'}
+                </span>
+            </div>
+            <div class="sync-key-box">
+                <span>${syncKey}</span>
+                <button class="btn-secondary" onclick="regenerateSyncKey()">New Key</button>
+            </div>
+            <div class="sync-subpanel">
+                <div class="sync-subpanel-header">
+                    <div>
+                        <h4>PC Sender</h4>
+                        <p>Rebuild after changing the PC library, then sync from the phone with only the key.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                        <button class="btn-secondary" onclick="rebuildMobileSyncBundle()">Rebuild Mobile Bundle</button>
+                        <button class="btn-secondary" onclick="${pcSyncServerState?.running ? 'stopPCSyncServer()' : 'startPCSyncServer()'}">
+                            ${pcSyncServerState?.running ? 'Stop Sender' : 'Start Sender'}
+                        </button>
+                    </div>
+                </div>
+                ${pcSyncBuildStatus ? `<p class="sync-note">${escapeHTML(pcSyncBuildStatus)}</p>` : ''}
+                ${pcSyncServerState?.running ? `
+                    <p class="sync-note">Ready. NewMusic PE can find this PC automatically when the key matches.</p>
+                ` : `
+                    <p class="sync-note">The sender is closed. Open this PC app with a built mobile bundle, then start it if auto-start did not.</p>
+                `}
+            </div>
+            <ul class="sync-rules">
+                <li>The phone only needs this key and the same network.</li>
+                <li>Every request needs the secret key.</li>
+                <li>Only the mobile manifest and listed mobile files can be downloaded.</li>
+            </ul>
+        </section>
+    `;
+    const syncSetupHtml = `
+        <section class="sync-card">
+            <div class="sync-header">
+                <div>
+                    <h3>PC to Mobile Sync</h3>
+                    <p>Run the first-time Windows setup before starting the phone sender.</p>
+                </div>
+                <span class="sync-status sync-status-dot">
+                    <span></span>Setup needed
+                </span>
+            </div>
+            <div class="sync-subpanel">
+                <div class="sync-subpanel-header">
+                    <div>
+                        <h4>First-Time Setup</h4>
+                        <p>Adds the Windows Firewall rules NewMusic needs for phone sync on Private networks.</p>
+                    </div>
+                    <div class="sync-actions-inline">
+                        <button class="btn-primary" onclick="runPCSyncFirstTimeSetup()">Set Up Sync</button>
+                        <button class="btn-secondary" onclick="checkPCSyncSetup()">Check Setup</button>
+                    </div>
+                </div>
+                <p class="sync-note">${escapeHTML(pcSyncSetupMessage || pcSyncSetupStatus?.message || pcSyncSetupStatus?.error || 'Setup has not been checked yet.')}</p>
+            </div>
+        </section>
+    `;
+    const syncSectionHtml = pcSyncSetupStatus?.configured ? syncSenderHtml : syncSetupHtml;
+
     contentArea.innerHTML = `
         <h1 class="header-title">Settings</h1>
         <div style="background: var(--bg-elevated); padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 24px;">
@@ -980,6 +1179,9 @@ function renderSettingsView() {
             
             </div>
             
+                        <div style="height: 1px; background: var(--border-color); width: 100%;"></div>
+            ${syncSectionHtml}
+
             <div style="height: 1px; background: var(--border-color); width: 100%;"></div>
             <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(255,0,0,0.05); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,0,0,0.2);">
                 <h3 style="margin: 0; font-size: 18px; color: #ff0050;">Danger Zone: Delete Profile</h3>
@@ -2218,14 +2420,32 @@ if (navPlaylists) { navPlaylists.addEventListener('click', (event) => { event.pr
 
 function formatDateInputValue(date) {
     const local = new Date(date);
-    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
-    return local.toISOString().split('T')[0];
+    if (Number.isNaN(local.getTime())) return '';
+    const day = String(local.getDate()).padStart(2, '0');
+    const month = String(local.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${local.getFullYear()}`;
 }
 
 function parseDateInputValue(value, endOfDay = false) {
-    const [year, month, day] = String(value || '').split('-').map(part => parseInt(part, 10));
+    const raw = String(value || '').trim();
+    let match = raw.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+    let day;
+    let month;
+    let year;
+    if (match) {
+        day = parseInt(match[1], 10);
+        month = parseInt(match[2], 10);
+        year = parseInt(match[3], 10);
+    } else {
+        match = raw.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/);
+        if (!match) return null;
+        year = parseInt(match[1], 10);
+        month = parseInt(match[2], 10);
+        day = parseInt(match[3], 10);
+    }
     if (!year || !month || !day) return null;
     const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
     if (endOfDay) date.setHours(23, 59, 59, 999);
     return Number.isNaN(date.getTime()) ? null : date;
 }
@@ -2249,11 +2469,11 @@ function renderStatsView() {
         <div class="controls-toolbar" style="gap: 16px;">
             <div style="display: flex; flex-direction: column;">
                 <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Start Date</label>
-                <input type="date" id="stat-start" class="ctrl-input" value="${defaultStart}" onchange="handleStatsDateChange()">
+                <input type="text" id="stat-start" class="ctrl-input" value="${defaultStart}" placeholder="12/06/2026" inputmode="numeric" onchange="handleStatsDateChange()" onkeydown="if(event.key === 'Enter') handleStatsDateChange()">
             </div>
             <div style="display: flex; flex-direction: column;">
                 <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">End Date</label>
-                <input type="date" id="stat-end" class="ctrl-input" value="${defaultEnd}" onchange="handleStatsDateChange()">
+                <input type="text" id="stat-end" class="ctrl-input" value="${defaultEnd}" placeholder="12/06/2026" inputmode="numeric" onchange="handleStatsDateChange()" onkeydown="if(event.key === 'Enter') handleStatsDateChange()">
             </div>
             <div style="display: flex; flex-direction: column;">
                 <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Quick Select</label>
@@ -2265,7 +2485,7 @@ function renderStatsView() {
                         <option value="365">Last Year</option>
                         <option value="all">All Time</option>
                     </select>
-                    <input type="month" id="stat-exact-month" class="ctrl-input" onchange="applyExactMonth(this.value)" title="Select exact month & year">
+                    <input type="text" id="stat-exact-month" class="ctrl-input" placeholder="06/2026" inputmode="numeric" onchange="applyExactMonth(this.value)" onkeydown="if(event.key === 'Enter') applyExactMonth(this.value)" title="Type month/year">
                 </div>
             </div>
             <div style="display: flex; flex-direction: column;">
@@ -2323,10 +2543,29 @@ window.applyQuickDateRange = function(value) {
 };
 
 window.applyExactMonth = function(val) {
-    if(!val) return;
-    const [year, month] = val.split('-');
-    const start = new Date(year, parseInt(month) - 1, 1);
-    const end = new Date(year, parseInt(month), 0);
+    const raw = String(val || '').trim();
+    if(!raw) return;
+    let match = raw.match(/^(\d{1,2})[\/.\-](\d{4})$/);
+    let month;
+    let year;
+    if (match) {
+        month = parseInt(match[1], 10);
+        year = parseInt(match[2], 10);
+    } else {
+        match = raw.match(/^(\d{4})[\/.\-](\d{1,2})$/);
+        if (!match) {
+            calculateStats();
+            return;
+        }
+        year = parseInt(match[1], 10);
+        month = parseInt(match[2], 10);
+    }
+    if (!year || !month || month < 1 || month > 12) {
+        calculateStats();
+        return;
+    }
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
     document.getElementById('stat-start').value = formatDateInputValue(start);
     document.getElementById('stat-end').value = formatDateInputValue(end);
     const quick = document.getElementById('stat-quick');
@@ -2344,7 +2583,11 @@ window.calculateStats = function() {
     const startDate = parseDateInputValue(document.getElementById('stat-start').value);
     const endDate = parseDateInputValue(document.getElementById('stat-end').value, true);
     if (!startDate || !endDate) {
-        dash.innerHTML = `<p style="color: var(--text-muted);">Choose a valid start and end date.</p>`;
+        dash.innerHTML = `<p style="color: var(--text-muted);">Type valid dates as DD/MM/YYYY, for example 12/06/2026.</p>`;
+        return;
+    }
+    if (startDate > endDate) {
+        dash.innerHTML = `<p style="color: var(--text-muted);">Start Date must be before End Date.</p>`;
         return;
     }
 
@@ -3509,3 +3752,7 @@ ipcRenderer.on('backend-reply', (event, msg) => {
 
 // Boot up the databases and routing on startup
 loadDatabases();
+refreshPCSyncSetupStatus().then(async status => {
+    if (status?.configured) await ensurePCSyncServerRunning({ quiet: true });
+    if (window.location.hash === '#settings') renderSettingsView();
+});

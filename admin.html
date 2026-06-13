@@ -958,24 +958,10 @@
       // 1. ELECTRON BACKEND CONNECTION & UI MODALS
       // ==========================================
       const { ipcRenderer, shell } = require("electron");
-      const { exec } = require("child_process");
       const path = require("path");
       const fs = require("fs");
       const os = require("os");
       const childProcess = require("child_process");
-
-      // Function to launch the batch script in a new terminal
-      window.runBatchScript = function () {
-        // __dirname resolves to the current folder of this HTML file
-        const batPath = path.join(__dirname, "SONG_DOWNLOAD.bat");
-
-        // 'start ""' tells Windows to open a new interactive command prompt window
-        exec(`start "" "${batPath}"`, (error) => {
-          if (error) {
-            alert("Failed to launch script: " + error.message);
-          }
-        });
-      };
 
       // Inject custom NewMusic Alert Modal
       window.showCustomAlert = function (msg) {
@@ -1215,6 +1201,25 @@
         );
       }
 
+      function expBuildDatabaseStrings() {
+        expSortSongsForDatabaseStorage();
+        return {
+          "database_artists.js": `const artistsDatabase = ${JSON.stringify(artistsDatabase, null, 2)};\n`,
+          "database_albums.js": `const albumsDatabase = ${JSON.stringify(albumsDatabase, null, 2)};\n`,
+          "database_songs.js": `const songsDatabase = ${JSON.stringify(songsDatabase, null, 2)};\n`,
+        };
+      }
+
+      function expSendDeleteWithAssets(filesToDelete, foldersToDelete, message) {
+        ipcRenderer.send("execute-nuclear-delete", {
+          filesToDelete: [...new Set(filesToDelete.filter(Boolean))],
+          foldersToDelete: [...new Set(foldersToDelete.filter(Boolean))],
+          databases: expBuildDatabaseStrings(),
+        });
+        const log = document.getElementById("exp-status");
+        if (log) log.textContent = message;
+      }
+
       function expSortSongsForDatabaseStorage() {
         const albumOrder = new Map(
           albumsDatabase.map((album, index) => [album.albumID, index]),
@@ -1337,7 +1342,7 @@
             <div class="modal-box" style="width:480px; max-width:calc(100vw - 40px); padding:24px; border:1px solid rgba(255,0,80,0.45);">
               <h3 style="color:#ff4f7f; margin:0 0 12px; font-size:17px;">${escapeHtml(title)}</h3>
               <p style="color:var(--text-main); margin:0 0 10px; font-size:15px; line-height:1.45;">${escapeHtml(message)}</p>
-              <p style="color:var(--text-muted); margin:0 0 14px; font-size:12px; line-height:1.45;">This removes database entries only. Asset files stay on disk so this is safer if you clicked by mistake.</p>
+              <p style="color:var(--text-muted); margin:0 0 14px; font-size:12px; line-height:1.45;">This removes the database entries and the related files in ./assets/. This cannot be undone.</p>
               ${
                 required
                   ? `
@@ -2876,17 +2881,17 @@
             (song) =>
               song.artistID === item.artistID || albumIds.has(song.albumID),
           ).length;
-          message = `Delete artist "${item.artist}"? This will also remove ${artistAlbums.length} album/EP/single entries and ${songCount} song entries from the databases.`;
-          statusMessage = `Deleted artist "${item.artist}".`;
+          message = `Delete artist "${item.artist}"? This will also remove ${artistAlbums.length} album/EP/single entries, ${songCount} song entries, and the artist folder in ./assets/.`;
+          statusMessage = `Deleted artist "${item.artist}" and related assets.`;
         } else if (section === "albums") {
           const songCount = songsDatabase.filter(
             (song) => song.albumID === item.albumID,
           ).length;
-          message = `Delete album "${item.title}"? This will also remove ${songCount} song entr${songCount === 1 ? "y" : "ies"} from the database.`;
-          statusMessage = `Deleted album "${item.title}".`;
+          message = `Delete album "${item.title}"? This will also remove ${songCount} song entr${songCount === 1 ? "y" : "ies"} from the database and delete the related cover/audio/lyrics files from ./assets/.`;
+          statusMessage = `Deleted album "${item.title}" and related assets.`;
         } else if (section === "songs") {
-          message = `Delete song "${item.title}" from the database?`;
-          statusMessage = `Deleted song "${item.title}".`;
+          message = `Delete song "${item.title}"? This removes it from the database and deletes its audio/lyrics files from ./assets/.`;
+          statusMessage = `Deleted song "${item.title}" and related assets.`;
         }
 
         const confirmName = section === "artists" ? item.artist : item.title;
@@ -2897,8 +2902,13 @@
         );
         if (!confirmed) return;
 
+        const filesToDelete = [];
+        const foldersToDelete = [];
+
         if (section === "artists") {
           const deletedArtistID = item.artistID;
+          const artistSlug = getArtistSlugFromArtist(item);
+          if (artistSlug) foldersToDelete.push(`./assets/${artistSlug}`);
           const deletedAlbumIds = new Set(
             albumsDatabase
               .filter((album) => album.artistID === deletedArtistID)
@@ -2924,9 +2934,15 @@
 
         if (section === "albums") {
           const deletedAlbumID = item.albumID;
+          if (item.paths?.cover) filesToDelete.push(item.paths.cover);
           for (let i = songsDatabase.length - 1; i >= 0; i--) {
-            if (songsDatabase[i].albumID === deletedAlbumID)
+            if (songsDatabase[i].albumID === deletedAlbumID) {
+              if (songsDatabase[i].paths?.audio)
+                filesToDelete.push(songsDatabase[i].paths.audio);
+              if (songsDatabase[i].paths?.lyrics)
+                filesToDelete.push(songsDatabase[i].paths.lyrics);
               songsDatabase.splice(i, 1);
+            }
           }
           const index = albumsDatabase.findIndex(
             (album) => album.albumID === deletedAlbumID,
@@ -2937,17 +2953,32 @@
 
         if (section === "songs") {
           const deletedSongID = item.songID;
+          if (item.paths?.audio) filesToDelete.push(item.paths.audio);
+          if (item.paths?.lyrics) filesToDelete.push(item.paths.lyrics);
           const index = songsDatabase.findIndex(
             (song) => song.songID === deletedSongID,
           );
           if (index >= 0) songsDatabase.splice(index, 1);
+          const remainingAlbumSongs = songsDatabase.filter(
+            (song) => song.albumID === item.albumID,
+          );
+          if (remainingAlbumSongs.length === 0) {
+            const albumIndex = albumsDatabase.findIndex(
+              (album) => album.albumID === item.albumID,
+            );
+            if (albumIndex >= 0) {
+              const album = albumsDatabase[albumIndex];
+              if (album.paths?.cover) filesToDelete.push(album.paths.cover);
+              albumsDatabase.splice(albumIndex, 1);
+            }
+          }
         }
 
         const remaining = getFilteredExperimentalItems();
         expState.selectedId =
           remaining[0]?.[cfg.idKey] || cfg.data()[0]?.[cfg.idKey] || null;
         expState.youtubeResult = null;
-        expSaveDatabases(statusMessage);
+        expSendDeleteWithAssets(filesToDelete, foldersToDelete, statusMessage);
         renderExperimentalSection();
       };
 
